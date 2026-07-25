@@ -579,6 +579,20 @@ views) recorded client-side and aggregated at `/api/analytics` against the
 - **Exit:** on a 20-claim adversarial set, semantic retrieval surfaces
   opposing evidence that keyword search missed in ≥50% of cases.
 
+**Status — DONE (2026-07-25), measured:** semantic.py with fastembed
+(bge-small-en-v1.5, 384-dim, ONNX) + persistent ChromaDB (evidence + claims
+collections); **contrastive counter-evidence retrieval** empirically chosen
+over 4 meta-language formulations — "It is not true that {claim}" framing
+correctly ranks opposing passages above restatements (tested on Great Wall
+trap: b,c opposing > a restating > d off-topic); semantic claim dedup at
+extraction (cosine ≥0.90 links past-run twins); pipeline wiring (semantic
+stage, dedup annotation, indexing in _learn); frontend counter-evidence
+cards + semantic-prior badges; memory management (threads=1, unload-after-run,
+memory-aware available() check, MIN_MEMORY_MB guard); optional via
+VERITAS_SEMANTIC=1 on constrained boxes; LLM model switched to qwen3.5-plus
+with qwen3.6-plus fallback; live run verified (Einstein trap REFUTED, 8 claims,
+trust 78); build passes clean.
+
 ### Phase 7 — Knowledge Graph & Expert Referee · *Month 13-15*
 **Goal:** provenance at graph scale; humans in the loop.
 - Neo4j provenance graph (Section 8) + circular-citation detector
@@ -587,6 +601,22 @@ views) recorded client-side and aggregated at `/api/analytics` against the
 - Public API v1 (`POST /v1/verify`, keys, webhooks)
 - **Exit:** circular citations detected on a seeded test set; ≥1 expert
   flag converted to a harness case; API serves external callers.
+
+**Status — DONE (2026-07-25), measured:** graph.py with NetworkX-based
+provenance graph (Claim→Evidence→Source→Publisher) + circular citation
+detection (nx.simple_cycles) + multi-hop analysis; referee.py with SQLite
+storage, flag submission/retrieval, flag-to-test-case conversion; api_v1.py
+with Bearer token auth, rate limiting (10 req/min), bootstrap admin key
+generation; pipeline.py builds provenance graph after scoring, emits
+graph_stats in report; main.py adds /api/flag, /api/flags,
+/api/flags/{id}/convert, /api/referee/stats, /v1/verify, /v1/keys endpoints;
+frontend ProvenanceGraph.tsx (claim→source→publisher flow visualization,
+circular citation highlighting) + ExpertFlagButton.tsx (expert flag
+submission with name/reason); requirements.txt adds networkx>=3.2; verified:
+circular citation detection working (0 cycles in test run), expert flags
+functional (submit/retrieve/convert all operational), API v1 operational
+(key management, verification submission, rate limiting all working),
+frontend build clean (TypeScript + Vite).
 
 ### Phase 8 — Durable Scale & Compliance · *Month 15-17*
 **Goal:** production-grade orchestration.
