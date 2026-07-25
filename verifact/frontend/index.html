@@ -3,46 +3,48 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>VeriFact — Adversarial Multi-Agent Fact Verification</title>
+<title>VeritasAI — The Research Court</title>
 <link rel="stylesheet" href="styles.css">
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛡️</text></svg>">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚖️</text></svg>">
 </head>
 <body>
 <header class="topbar">
   <div class="brand">
-    <span class="logo">🛡️</span>
+    <span class="logo">⚖️</span>
     <div>
-      <h1>VeriFact</h1>
-      <p class="tagline">Adversarial multi-agent research &amp; fact verification</p>
+      <h1>VeritasAI</h1>
+      <p class="tagline">The Research Court — every claim argued, verified, and cryptographically anchored</p>
     </div>
   </div>
   <div class="agent-badges" id="agentBadges">
-    <span class="ab" data-agent="planner">Planner</span>
-    <span class="ab" data-agent="researcher">Researcher</span>
+    <span class="ab" data-agent="murli">Murli</span>
+    <span class="ab" data-agent="researcher">Evidence</span>
     <span class="ab" data-agent="extractor">Extractor</span>
     <span class="ab" data-agent="verifier-a">Verifier A</span>
     <span class="ab" data-agent="verifier-b">Verifier B</span>
     <span class="ab" data-agent="verifier-c">Verifier C</span>
+    <span class="ab" data-agent="hallucination">Hallucination Det.</span>
     <span class="ab" data-agent="contradiction">Contradiction Det.</span>
-    <span class="ab" data-agent="writer">Writer</span>
+    <span class="ab" data-agent="writer">Synthesis</span>
   </div>
 </header>
 
 <main>
   <!-- ============ INPUT ============ -->
   <section class="hero" id="heroSection">
-    <h2>Every claim, argued over by <em>three independent AI agents</em> before you read it.</h2>
+    <h2>Three adversarial agents argue over every claim.<br>
+        <em>You get the receipts — cryptographically verified.</em></h2>
     <form id="topicForm" autocomplete="off">
       <input id="topicInput" type="text"
-             placeholder="Enter a topic or a claim to investigate…"
+             placeholder="Enter a topic or a claim to put on trial…"
              value="Albert Einstein won the Nobel Prize for his theory of relativity">
-      <button type="submit" id="runBtn">Verify&nbsp;→</button>
+      <button type="submit" id="runBtn">Put on trial&nbsp;→</button>
     </form>
     <div class="chips">
       <span class="chip-label">Try:</span>
       <button class="chip">Albert Einstein won the Nobel Prize for his theory of relativity</button>
-      <button class="chip">History of the Eiffel Tower</button>
       <button class="chip">The Great Wall of China is visible from space</button>
+      <button class="chip">History of the Eiffel Tower</button>
       <button class="chip">How does mRNA vaccine technology work</button>
     </div>
   </section>
@@ -50,13 +52,15 @@
   <!-- ============ LIVE PIPELINE ============ -->
   <section class="pipeline-wrap hidden" id="pipelineSection">
     <div class="pipeline" id="pipeline">
-      <div class="pstage" data-stage="plan"><span class="picon">📋</span><span>Plan</span></div>
-      <div class="pstage" data-stage="research"><span class="picon">🔍</span><span>Research</span></div>
-      <div class="pstage" data-stage="extract"><span class="picon">🧩</span><span>Extract</span></div>
-      <div class="pstage" data-stage="verify"><span class="picon">⚖️</span><span>Verify ×3</span></div>
+      <div class="pstage" data-stage="hypothesize"><span class="picon">🧠</span><span>Hypotheses</span></div>
+      <div class="pstage" data-stage="research"><span class="picon">🔍</span><span>Evidence</span></div>
+      <div class="pstage" data-stage="extract"><span class="picon">🧩</span><span>Claims</span></div>
+      <div class="pstage" data-stage="verify"><span class="picon">⚖️</span><span>Court ×3</span></div>
+      <div class="pstage" data-stage="hallucinations"><span class="picon">🕳️</span><span>Hallucinations</span></div>
       <div class="pstage" data-stage="contradictions"><span class="picon">⚠️</span><span>Contradictions</span></div>
-      <div class="pstage" data-stage="report"><span class="picon">📄</span><span>Report</span></div>
+      <div class="pstage" data-stage="report"><span class="picon">📜</span><span>Verdict</span></div>
     </div>
+    <div id="hypothesisCards" class="hypothesis-cards"></div>
     <div class="live-grid">
       <div class="live-feed" id="liveFeed"></div>
       <div class="live-claims" id="liveClaims"></div>
@@ -76,30 +80,45 @@
       <div class="report-title">
         <h3 id="reportTopic"></h3>
         <p id="reportStats"></p>
+        <div class="verify-badge" id="verifyBadge">
+          <span class="vb-icon">🔐</span>
+          <span id="verifyText">Verifying cryptographic anchors…</span>
+        </div>
       </div>
     </div>
 
     <div class="summary-card" id="summaryCard"></div>
-
     <div id="contradictionsBlock"></div>
 
-    <h4 class="section-h">Verified claims <span class="muted" id="claimCount"></span></h4>
+    <h4 class="section-h">Claims &amp; verdicts <span class="muted" id="claimCount"></span></h4>
     <div class="claims" id="claimsList"></div>
 
-    <h4 class="section-h">Sources <span class="muted" id="sourceCount"></span></h4>
+    <h4 class="section-h">Evidence sources <span class="muted" id="sourceCount"></span></h4>
     <div class="sources" id="sourcesList"></div>
   </section>
 
   <!-- ============ HISTORY ============ -->
   <section class="history" id="historySection">
-    <h4 class="section-h">Recent investigations</h4>
+    <h4 class="section-h">Past trials</h4>
     <div id="historyList" class="history-list"></div>
   </section>
 </main>
 
+<!-- ============ EVIDENCE INSPECTOR MODAL ============ -->
+<div class="modal-overlay hidden" id="inspectorModal">
+  <div class="modal">
+    <div class="modal-head">
+      <h4>🔎 Evidence Inspector</h4>
+      <button class="modal-close" id="modalClose">✕</button>
+    </div>
+    <div class="modal-body" id="inspectorBody"></div>
+  </div>
+</div>
+
 <div class="error-banner hidden" id="errorBanner"></div>
 <footer>
-  VeriFact · 7 specialized agents · Tavily search · Qwen LLM · every claim independently verified
+  VeritasAI · Murli self-adversarial agent · 3-verifier court · Serper + Tavily evidence ·
+  Qwen LLM · FEC: SHA-256 + Merkle anchoring + signed verdicts
 </footer>
 <script src="app.js"></script>
 </body>

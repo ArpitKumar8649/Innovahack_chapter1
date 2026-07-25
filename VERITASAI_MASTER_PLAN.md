@@ -274,19 +274,53 @@ corrected_version?}` — the corrected version feeds the report's
 
 ## 6. Fact-Embedded Citations (FEC) — citations as verifiable artifacts
 
-The brief's ZKP idea wanted *cryptographically verifiable truth*. The
-implementable version that delivers the same trust:
+The brief's ZKP idea wanted *cryptographically verifiable truth*. ZKP itself
+is the wrong tool here — it proves computation integrity, not semantic
+truth, and hiding the source contradicts a problem statement that demands
+*citation-backed* reports (the verifier must see the source; the user must
+see the citation). What survives is the **goal**: citations as tamper-evident
+cryptographic artifacts. FEC delivers it with four layers:
 
-1. At extraction time, each evidence chunk gets `SHA-256(chunk_text)` +
-   `retrieved_at` + `url` stored in the evidence registry
-2. Every verdict quotes an **exact span**; the span's hash is recorded
-3. In the report UI, clicking `[3]` opens the **Evidence Inspector**:
-   - the exact quoted sentence, highlighted in the source chunk
-   - source URL, publisher, retrieval timestamp, content hash
-   - the verifier's reasoning attached to that span
-4. Anyone can re-fetch the URL and verify the hash matched at retrieval time
+**Layer 1 — Content hashing.** At extraction time, each evidence chunk gets
+`SHA-256(chunk_text)` + `retrieved_at` + `url` stored in the evidence
+registry. Every verdict quotes an **exact span**; the span's chunk hash is
+recorded alongside it.
 
-> "No more *I read it on the internet* — every claim shows its receipt."
+**Layer 2 — Merkle anchoring (the ZKP-adjacent layer).** Each run's evidence
+chunks form a **Merkle tree**; the report carries the **Merkle root**.
+Every claim stores the Merkle **proof path** for its cited chunks, so any
+verifier — client-side, no trust in our server — can cryptographically
+confirm: *this exact quote was in the exact evidence set of this exact run.*
+Tamper with one quote and the root breaks. This is the honest version of
+"cryptographic proof of sourcing": integrity without a trusted party.
+
+**Layer 3 — Signed verdicts (non-repudiation).** Each agent's verdict is
+HMAC-signed with a per-run key; the report stores `(verifier, stance,
+reasoning, quote, signature)`. The report proves *which* agent said *what*
+in *which* run — agents cannot be silently re-quoted or edited after the
+fact. The per-run key is published with the report, so signatures are
+publicly checkable, not a shared secret.
+
+**Layer 4 — Public verification endpoint.** `GET /api/reports/{id}/verify`
+recomputes the Merkle root from stored chunks and validates every signature
+and span hash, returning a machine-readable attestation. The UI renders a
+**✓ Cryptographically verified** badge only when the endpoint (or the
+client-side check) passes.
+
+**The UI — Evidence Inspector.** Clicking `[3]` on any claim opens:
+- the exact quoted sentence, highlighted in its source chunk
+- source URL, publisher, authority tier, retrieval timestamp, content hash
+- the verifier's reasoning attached to that span
+- the Merkle proof, verifiable in-browser via Web Crypto (no server trust)
+
+> "No more *I read it on the internet* — every claim shows its receipt,
+> and the receipt is math."
+
+**Where ZKP genuinely belongs (future):** if VeritasAI ever verifies claims
+against *confidential* sources — corporate documents, medical or legal
+records — where an outsider must be convinced *without* seeing the records,
+ZKP/zkML becomes the right tool. That is a different product (enterprise
+compliance), not this transparency-first PS; noted for Phase 8+ exploration.
 
 ---
 

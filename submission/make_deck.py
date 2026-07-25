@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generate the VeriFact submission deck (6-7 slides, dark theme).
+"""Generate the VeritasAI submission deck (7 slides, dark theme).
 
 Usage: python3 make_deck.py  →  VeriFact_Deck.pptx
 """
@@ -77,18 +77,18 @@ def card(s, x, y, w, h, heading, lines, head_color=ACCENT):
 
 # ============ SLIDE 1 — TITLE ============
 s = slide()
-b = box(s, 1.2, 1.6, 11, 3.2)
-txt(b.text_frame, "🛡️  VERIFACT", size=54, color=TEXT, bold=True)
-txt(b.text_frame, "Autonomous Multi-Agent Research & Fact-Verification System",
+b = box(s, 1.2, 1.5, 11, 3.4)
+txt(b.text_frame, "⚖️  VERITASAI", size=54, color=TEXT, bold=True)
+txt(b.text_frame, "The Research Court — Autonomous Multi-Agent Fact-Verification",
     size=24, color=ACCENT, bold=True)
 txt(b.text_frame,
-    "Every claim argued over by three independent AI agents — "
-    "with citations and a confidence score you can trust.",
+    "Every claim argued over by three adversarial agents, grounded in exact "
+    "source quotes, and anchored to a Merkle tree you can verify in your browser.",
     size=17, color=MUTED)
 b = box(s, 1.2, 5.4, 11, 1.2)
 txt(b.text_frame, "InnovaHack Chapter 1  ·  Domain 3: Gen AI  ·  Problem Statement 1",
     size=15, color=MUTED)
-txt(b.text_frame, "Team submission — Round 1", size=13, color=MUTED)
+txt(b.text_frame, "Phase 0-1 of the 18-month master plan", size=13, color=MUTED)
 
 # ============ SLIDE 2 — PROBLEM ============
 s = slide()
@@ -98,34 +98,34 @@ tf = b.text_frame
 bullet(tf, "• Generative AI hallucinates — and reports ~100% confidence while doing it "
            "(calibration research, Amazon/MIT 2024-25).", size=17)
 bullet(tf, "• Single-model answers give no receipts: no sources, no dissent, no way to "
-           "know what was verified.", size=17)
+           "know what was verified — citations link URLs, not evidence.", size=17)
 bullet(tf, "• Example: ask a chatbot “Did Einstein win the Nobel for relativity?” — "
            "many repeat the myth with full confidence.", size=17, color=YELLOW)
 bullet(tf, "• The problem statement asks: can multiple AI agents check and challenge "
            "each other to produce trustworthy output?", size=17)
-bullet(tf, "VeriFact's answer: an adversarial panel, not a single voice.", size=19,
-       color=GREEN)
+bullet(tf, "VeritasAI's answer: a self-adversarial court, not a single voice — "
+           "and every receipt is math.", size=19, color=GREEN)
 
 # ============ SLIDE 3 — ARCHITECTURE ============
 s = slide()
-title_bar(s, "THE SOLUTION", "A 7-agent pipeline with an adversarial core")
+title_bar(s, "THE SOLUTION", "The Research Court — a 10-stage pipeline")
 flow = [
-    ("1 · PLANNER", "topic → subtopics +\n8 diverse search queries"),
-    ("2 · RESEARCHER", "Tavily web search →\n12 deduped sources"),
-    ("3 · EXTRACTOR", "atomic claim\ndecomposition"),
-    ("4 · VERIFIERS ×3", "adversarial panel,\nparallel, majority vote"),
-    ("5 · CONTRADICTION", "disagreements &\nrefutations surfaced"),
-    ("6 · WRITER", "citation-backed report\n+ trust score"),
+    ("1-2 · MURLI", "3 hypotheses +\nself-challenge →\ncounter-searches"),
+    ("3 · EVIDENCE", "Serper web+scholar\n+news → Tavily\nfull-text, hashed"),
+    ("4 · CLAIMS", "atomic claims\nanchored to\nevidence chunks"),
+    ("5 · COURT ×3", "span-gated quotes,\nHMAC-signed\nverdicts"),
+    ("6-7 · SWEEPS", "typed hallucination\n+ contradiction\ndetection"),
+    ("8-10 · VERDICT", "trust engine,\nMerkle root,\nSQLite journal"),
 ]
 x = 0.55
 for name, desc in flow:
     shp = s.shapes.add_shape(1, Inches(x), Inches(2.3), Inches(1.9), Inches(1.7))
     shp.fill.solid()
     shp.fill.fore_color.rgb = CARD
-    shp.line.color.rgb = ACCENT if "VERIFIER" in name else RGBColor(0x23, 0x2E, 0x47)
+    shp.line.color.rgb = ACCENT if "COURT" in name else RGBColor(0x23, 0x2E, 0x47)
     tf = shp.text_frame
     tf.word_wrap = True
-    txt(tf, name, size=12.5, color=ACCENT if "VERIFIER" in name else TEXT, bold=True,
+    txt(tf, name, size=12.5, color=ACCENT if "COURT" in name else TEXT, bold=True,
         align=PP_ALIGN.CENTER)
     for ln in desc.split("\n"):
         bullet(tf, ln, size=11, color=MUTED).alignment = PP_ALIGN.CENTER
@@ -136,61 +136,63 @@ for name, desc in flow:
 b = box(s, 0.7, 4.5, 12, 2.4)
 tf = b.text_frame
 bullet(tf, "• Live pipeline: every stage streams to the browser over Server-Sent Events — "
-           "verdict badges flip per claim in real time.", size=15)
-bullet(tf, "• Research-grounded: Stanford STORM (multi-perspective research), DebateCV "
-           "SIGIR 2025 (debate-driven verification), FActScore (atomic claims).", size=15)
-bullet(tf, "• Resilient: per-agent failure tolerance, JSON nudge-retry, graceful degradation.",
+           "hypotheses form, verdict badges flip, fabricated quotes get voided in real time.",
        size=15)
+bullet(tf, "• Research-grounded: STORM (multi-perspective research), DebateCV SIGIR 2025 "
+           "(debate-driven verification), FActScore (atomic claims), MBFC (source tiers).",
+       size=15)
+bullet(tf, "• Resilient: per-agent failure tolerance, JSON nudge-retry, graceful "
+           "degradation to snippet-only mode if extraction fails.", size=15)
 
-# ============ SLIDE 4 — ADVERSARIAL PANEL ============
+# ============ SLIDE 4 — MURLI ============
 s = slide()
-title_bar(s, "THE DIFFERENTIATOR", "Three verifiers. Three lenses. Majority vote.")
-card(s, 0.6, 1.9, 3.9, 2.6, "A · EVIDENTIALIST",
-     ["“What do the sources literally say?”",
-      "Supports a claim ONLY if a source",
-      "explicitly states it. Never infers."], GREEN)
-card(s, 4.7, 1.9, 3.9, 2.6, "B · SKEPTIC",
-     ["“How could this be wrong?”",
-      "Actively attacks each claim; defaults",
-      "to insufficient without strong evidence."], RED)
-card(s, 8.8, 1.9, 3.9, 2.6, "C · CONTEXTUALIST",
-     ["“Is this precise and current?”",
-      "Checks dates, numbers, scope —",
-      "flags outdated or overstated claims."], YELLOW)
-b = box(s, 0.7, 4.8, 12, 2.2)
+title_bar(s, "THE CORE INNOVATION", "Murli attacks its own findings first")
+card(s, 0.6, 1.9, 6.0, 4.6, "SELF-ADVERSARIAL REASONING",
+     ["Standard agents “yes-sir” the prompt.",
+      "Murli generates 3 competing hypotheses,",
+      "then for each asks:",
+      "",
+      "  “If this is WRONG, why would it be",
+      "   wrong? What evidence would DISPROVE",
+      "   it? Who disagrees, and on what",
+      "   grounds?”",
+      "",
+      "…and issues those questions as REAL",
+      "searches — not rhetorical questions."], ACCENT)
+card(s, 6.9, 1.9, 5.8, 4.6, "WHAT THE COURT RECEIVES",
+     ["• 3 hypotheses with prior plausibility",
+      "• counter-evidence searches already run",
+      "• self-identified weaknesses per hypothesis",
+      "  (single-source dependence, confounders,",
+      "   unverifiable premises)",
+      "• full-text sources (Serper → Tavily),",
+      "  chunked and SHA-256 hashed",
+      "",
+      "Hallucination is pre-filtered at the",
+      "source — before verification begins."], GREEN)
+
+# ============ SLIDE 5 — FEC ============
+s = slide()
+title_bar(s, "THE TRUST LAYER", "Citations as cryptographic artifacts (FEC)")
+card(s, 0.6, 1.9, 6.0, 2.2, "SPANN GATE + SIGNED VERDICTS",
+     ["Every verdict must quote an evidence span",
+      "that exists VERBATIM in the corpus —",
+      "fabricated quotes void the verdict.",
+      "Verdicts are HMAC-signed per run."], RED)
+card(s, 6.9, 1.9, 5.8, 2.2, "MERKLE ANCHORING",
+     ["Every chunk hashed; the run's chunks form",
+      "a Merkle tree. Each claim stores the proof",
+      "path for its cited chunks — verified",
+      "client-side via Web Crypto. No server trust."], ACCENT)
+b = box(s, 0.7, 4.4, 12, 2.6)
 tf = b.text_frame
-bullet(tf, "Why it matters: “Why Do Multi-Agent LLM Systems Fail?” (2025) found verifier "
-           "superficiality is the #1 failure mode — task-focused verifiers gave +15.6% accuracy.",
-       size=15)
-bullet(tf, "Anti-superficiality rule: every verdict MUST cite source IDs. "
-           "Evidence-free verdicts are structurally invalid.", size=15, color=GREEN)
-bullet(tf, "≥2 support → verified · ≥2 refute → contradicted · mixed → disputed · "
-           "all insufficient → unverified.", size=15)
-
-# ============ SLIDE 5 — CONFIDENCE SCORING ============
-s = slide()
-title_bar(s, "RIGOR", "Confidence is computed — never self-reported")
-b = box(s, 0.7, 1.9, 12, 1.4)
-txt(b.text_frame,
-    "LLMs report ~100% confidence even when wrong. VeriFact derives confidence "
-    "deterministically from verification signals:", size=16, color=MUTED)
-card(s, 0.6, 3.2, 7.6, 3.4, "THE FORMULA",
-     ["confidence = 40 × verifier agreement",
-      "               + 25 × source coverage",
-      "               + 20 × source quality (relevance)",
-      "               + 15 × specificity",
-      "               − 30 × contradiction penalty",
-      "",
-      "clamped to [5, 98] — never 0 (unverifiable ≠ false),",
-      "never 100 (epistemic honesty)"], ACCENT)
-card(s, 8.5, 3.2, 4.2, 3.4, "STATUS BANDS",
-     ["≥ 75  →  verified",
-      "50-74 →  disputed",
-      "25-49 →  unverified",
-      "< 25  →  contradicted",
-      "",
-      "Report trust score =",
-      "mean of claim confidences"], GREEN)
+bullet(tf, "Click any citation → the Evidence Inspector shows the exact quoted sentence "
+           "highlighted in its source chunk, the authority tier, the content hash, and a "
+           "Merkle proof verified in your browser.", size=15)
+bullet(tf, "GET /api/reports/{id}/verify recomputes the root and re-checks every signature "
+           "from stored data alone — the report proves itself.", size=15, color=GREEN)
+bullet(tf, "“No more ‘I read it on the internet’ — every claim shows its receipt, "
+           "and the receipt is math.”", size=16, color=YELLOW)
 
 # ============ SLIDE 6 — DEMO ============
 s = slide()
@@ -199,40 +201,44 @@ b = box(s, 0.7, 1.8, 12, 1.1)
 txt(b.text_frame, "Query: “Albert Einstein won the Nobel Prize for his theory of relativity”",
     size=17, color=YELLOW, bold=True)
 card(s, 0.6, 3.0, 6.0, 3.6, "WHAT HAPPENED",
-     ["1. Extractor surfaced the premise itself as Claim 1",
-      "2. All three verifiers: A=refute B=refute C=refute",
-      "3. Claim 1 → CONTRADICTED (95% confidence it is false)",
-      "4. Report opens: “Contrary to the common claim…",
-      "   he won for the law of the photoelectric effect [1][5]”",
-      "5. Trust score 92 across 8 verified claims"], RED)
+     ["1. Murli formed 3 hypotheses + counter-searches",
+      "2. Extractor surfaced the premise as Claim 1",
+      "3. All three verifiers: A=refute B=refute C=refute",
+      "4. Claim 1 → REFUTED with exact quotes from",
+      "   nobelprize.org, span-validated + signed",
+      "5. Report opens with the correction, not the myth",
+      "6. Attestation: Merkle root ✓, all signatures ✓"], RED)
 card(s, 6.9, 3.0, 5.8, 3.6, "WHY JUDGES SHOULD CARE",
      ["A plain chatbot repeats the myth confidently.",
-      "VeriFact refutes it with receipts.",
+      "VeritasAI refutes it with verifiable receipts.",
       "",
-      "Same pipeline on clean topics (Eiffel Tower,",
-      "mRNA vaccines) → high-trust reports,",
-      "zero false alarms."], GREEN)
+      "Measured: Great Wall trap → 6 fabricated",
+      "verifier quotes caught and voided by the",
+      "span gate; premise still REFUTED.",
+      "Clean topics → high-trust, zero false alarms."], GREEN)
 
-# ============ SLIDE 7 — TECH + FUTURE ============
+# ============ SLIDE 7 — TECH + ROADMAP ============
 s = slide()
-title_bar(s, "BUILD & WHAT'S NEXT", "Tech stack and roadmap")
-card(s, 0.6, 1.9, 6.0, 4.6, "TECH STACK",
+title_bar(s, "BUILD & WHAT'S NEXT", "Phase 0-1 shipped · 18-month arc planned")
+card(s, 0.6, 1.9, 6.0, 4.6, "TECH STACK (SHIPPED)",
      ["Backend — FastAPI + asyncio, SSE streaming",
-      "LLM — Qwen (DashScope, OpenAI-compatible)",
-      "Search — Tavily API",
-      "Frontend — vanilla JS/CSS (zero build step)",
-      "Deploy — Docker + Render (render.yaml)",
+      "LLM — Qwen (DashScope, provider-agnostic layer)",
+      "Search — Serper.dev (web + scholar + news)",
+      "Extraction — Tavily /extract (full text)",
+      "Storage — SQLite journal + re-attestation",
+      "Frontend — vanilla JS + Web Crypto",
       "",
-      "~2,500 lines · 7 agents · fully async",
-      "Typical run: 30-40 seconds end-to-end"], ACCENT)
-card(s, 6.9, 1.9, 5.8, 4.6, "FUTURE WORK",
-     ["Dynamic re-research: low-confidence claims",
-      "trigger targeted follow-up searches (LangGraph)",
-      "Full-document RAG over uploaded PDFs",
-      "Browser extension: verify any article in-place",
-      "Claim history: track how facts change over time",
-      "Multi-model panel: different LLMs per verifier",
-      "for true model diversity"], ACCENT2)
+      "~2,900 lines · 10-stage court · fully async",
+      "Typical run: 60-90 seconds end-to-end"], ACCENT)
+card(s, 6.9, 1.9, 5.8, 4.6, "ROADMAP (MASTER PLAN)",
+     ["P2 — Trust engine v2 + FEVER/SciFact eval",
+     "       harness in CI (prove it scientifically)",
+      "P3 — Claim memory + multi-turn debate rounds",
+      "P4 — Argument trees + Debate Theater UI",
+      "P5 — ChromaDB: counter-evidence retrieval",
+      "P6 — Neo4j provenance graph + expert referee",
+      "P7 — Temporal durable orchestration",
+      "P8 — Red-team agent + white-label API"], ACCENT2)
 
 prs.save("VeriFact_Deck.pptx")
 print(f"Saved VeriFact_Deck.pptx — {len(prs.slides._sldIdLst)} slides")

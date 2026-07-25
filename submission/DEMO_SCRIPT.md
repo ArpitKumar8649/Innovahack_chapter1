@@ -1,7 +1,8 @@
-# VeriFact — 5-Minute Demo Script (optional video)
+# VeritasAI — 5-Minute Demo Script (optional video)
 
-**Setup before recording:** app open at the public URL, dark theme,
-one completed run visible in history (Einstein trap).
+**Setup before recording:** app open at the public URL, dark theme, one
+completed run visible in history (Einstein trap). Have a plain chatbot tab
+open beside it.
 
 ---
 
@@ -11,56 +12,66 @@ of relativity?"* Show it answering confidently (often wrong or hedging).
 Voiceover: *"This is the problem. AI research tools are confident — but
 confidence isn't truth."*
 
-**0:20 — Introduce VeriFact (30s)**
-Switch to VeriFact. Show the landing page and the agent badges.
-Voiceover: *"VeriFact doesn't answer — it investigates. Seven specialized
-agents: a planner, a researcher, a claim extractor, three adversarial
-verifiers, a contradiction detector, and a report writer."*
+**0:20 — Introduce VeritasAI (30s)**
+Switch to VeritasAI. Show the landing page and the agent bench.
+Voiceover: *"VeritasAI doesn't answer — it convenes a court. A self-adversarial
+research agent, three adversarial verifiers, a hallucination auditor, a
+contradiction detector, and a synthesis writer. And every claim it makes
+carries a cryptographic receipt."*
 
 **0:50 — The live pipeline (90s)**
-Type the same Einstein claim. Hit Verify. Walk through the live stages as
-they stream in:
-- *"The planner decomposes the topic into subtopics and search angles…"*
-- *"The researcher pulls sources from the live web via Tavily…"*
-- *"The extractor decomposes the material into atomic claims — note it
-  surfaces the premise itself as Claim 1…"*
-- *"Now the adversarial panel: three verifiers with different lenses —
-  evidentialist, skeptic, contextualist — run in parallel. Watch the
-  verdict badges flip…"*
+Type the same Einstein claim. Hit "Put on trial". Walk through the live
+stages as they stream in:
+- *"Murli forms three competing hypotheses — including the claim itself and
+  its strongest negation — and publishes a weakness for each…"*
+- *"It issues its own counter-searches: Serper across web, scholar, and news,
+  then Tavily extracts the full text of every source — chunked and SHA-256
+  hashed…"*
+- *"The extractor decomposes the corpus into atomic claims anchored to exact
+  evidence chunks — note the premise itself is Claim 1…"*
+- *"Now the court: three verifiers with different lenses — evidentialist,
+  skeptic, contextualist — in parallel. Watch the badges flip…"*
 
 **2:20 — The catch (60s)**
 Point at Claim 1's badges: A=✗ B=✗ C=✗.
-Voiceover: *"All three independently refute the premise. The contradiction
-detector logs it. And the report opens with a correction — not the myth:
-'Contrary to the common claim… he won for the law of the photoelectric
-effect' — with clickable citations."*
-Scroll the report: trust gauge, per-claim confidence bars, sources grid.
+Voiceover: *"All three independently refute the premise — each with an exact
+quote from the corpus. And here's the guardrail: if a verifier fabricates a
+quote, the span gate voids its verdict on the spot."*
+Open the **Evidence Inspector** on a claim:
+- *"This is the receipt: the exact quoted sentence, highlighted in its source
+  chunk, the source's authority tier, the content hash — and a Merkle proof
+  verified right here in the browser. No trust in our server required."*
+Point at the attestation badge: *"Merkle root matched, all verdict signatures
+valid. The report proves itself."*
 
 **3:20 — Clean topic (40s)**
-Run *"History of the Eiffel Tower"* (or open from history).
-Voiceover: *"On well-documented topics, the panel reaches consensus — high
-trust score, zero false alarms. The system is calibrated: it argues when it
-should, and agrees when it should."*
+Open *"History of the Eiffel Tower"* from history (or run it live).
+Voiceover: *"On a clean topic the court reaches consensus — high-trust claims,
+zero false alarms, and genuinely contested interpretations stay marked
+CONTESTED instead of being flattened into a fake certainty."*
 
-**4:00 — Architecture + rigor (40s)**
-Show the architecture slide (or README).
-Voiceover: *"Confidence is never self-reported by the model — it's computed
-from verifier agreement, source coverage, source quality, and contradiction
-penalties. The design is grounded in 2025 research: DebateCV's adversarial
-verification, FActScore's atomic claims, and the multi-agent failure-modes
-paper, which showed task-focused verifiers add 15 points of accuracy."*
+**4:00 — The vision (60s)**
+Voiceover: *"This is Phase 0-1 of an 18-month plan: the research court with
+cryptographic citations. Next: a FEVER-benchmarked evaluation harness that
+proves accuracy scientifically, multi-turn debate rounds, claim memory across
+runs, semantic counter-evidence retrieval, and a provenance graph that catches
+blogs citing blogs. The destination: the world's most trustworthy search
+engine — where every claim shows its receipt, and the receipt is math."*
 
-**4:40 — Close (20s)**
-Voiceover: *"VeriFact: every claim argued over by three independent agents
-before you read it. Built in 24 hours with FastAPI, Qwen, and Tavily.
-Thank you."*
+---
+
+**Backup beats** (if time allows):
+- Show the Great Wall run from history: *"six fabricated verifier quotes were
+  caught and voided by the span gate — the premise was still refuted."*
+- `GET /api/reports/{id}/verify` in a browser tab: machine-readable
+  attestation, recomputed from stored data alone.
 
 ---
 
 ## Submission checklist
 
 - [ ] Deployed URL accessible (codespace public port / Render)
-- [ ] PPT (6-7 slides) — `submission/VeriFact_Deck.pptx`
+- [ ] PPT (7 slides) — `submission/VeriFact_Deck.pptx`
 - [ ] Optional 5-min video (script above)
 - [ ] Drive folder with **public viewing access** ("Anyone with the link can view")
 - [ ] Google Form submission: https://forms.gle/J41yUTNsgbBUHhk37

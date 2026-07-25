@@ -260,3 +260,120 @@ footer {
 }
 ::-webkit-scrollbar { width: 8px; }
 ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+/* ============ v2: Debate Theater ============ */
+
+/* hypothesis cards */
+.hypothesis-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 10px; margin-top: 14px; }
+.hyp-card { background: var(--card); border: 1px solid var(--border);
+  border-radius: 10px; padding: 12px 14px; }
+.hyp-id { font-size: 11px; font-weight: 700; color: var(--accent-2); letter-spacing: 1px; }
+.hyp-text { font-size: 13px; margin: 5px 0 8px; }
+.hyp-bar { position: relative; height: 7px; background: var(--card-2);
+  border-radius: 99px; overflow: visible; }
+.hyp-fill { height: 100%; border-radius: 99px;
+  background: linear-gradient(90deg, var(--accent), var(--accent-2)); }
+.hyp-bar span { position: absolute; right: 0; top: -17px; font-size: 10.5px; color: var(--muted); }
+.hyp-counter { margin-top: 10px; font-size: 11.5px; color: var(--muted); }
+.hyp-weak { margin-top: 6px; font-size: 11.5px; color: var(--yellow); }
+
+/* epistemic status colors (v2 taxonomy) */
+.st-established.claim-status, .st-established.conf-pill { background: rgba(46,204,143,.16); color: var(--green); }
+.st-supported.claim-status, .st-supported.conf-pill { background: rgba(79,140,255,.14); color: var(--accent); }
+.st-contested.claim-status, .st-contested.conf-pill { background: rgba(245,185,66,.14); color: var(--yellow); }
+.st-refuted.claim-status, .st-refuted.conf-pill { background: rgba(255,93,108,.15); color: var(--red); }
+.st-unverifiable.claim-status, .st-unverifiable.conf-pill { background: rgba(107,118,144,.18); color: var(--gray); }
+.st-outdated.claim-status, .st-outdated.conf-pill { background: rgba(245,185,66,.12); color: var(--yellow); }
+.claim-card.st-established { border-left-color: var(--green); }
+.claim-card.st-supported { border-left-color: var(--accent); }
+.claim-card.st-contested { border-left-color: var(--yellow); }
+.claim-card.st-refuted { border-left-color: var(--red); background: rgba(255,93,108,.05); }
+.claim-card.st-unverifiable { border-left-color: var(--gray); }
+.claim-card.st-outdated { border-left-color: var(--yellow); }
+.conf-fill.st-established { background: var(--green); }
+.conf-fill.st-supported { background: var(--accent); }
+.conf-fill.st-contested { background: var(--yellow); }
+.conf-fill.st-refuted { background: var(--red); }
+.conf-fill.st-unverifiable { background: var(--gray); }
+.conf-fill.st-outdated { background: var(--yellow); }
+
+/* voided verdicts (span gate) */
+.vb.v-void { opacity: .55; text-decoration: line-through; }
+.v-void-tag { font-size: 10px; color: var(--red); text-transform: uppercase; letter-spacing: .5px; }
+
+/* hallucination flags */
+.hallu-flag { font-size: 12.5px; border-radius: 8px; padding: 8px 12px; margin-bottom: 8px;
+  background: rgba(245,185,66,.08); border: 1px solid rgba(245,185,66,.3); color: #e8d9a8; }
+.hallu-flag.hallu-high { background: rgba(255,93,108,.08); border-color: rgba(255,93,108,.35); color: #f3b9bf; }
+
+/* evidence chips */
+.claim-evidence { display: flex; gap: 5px; flex-wrap: wrap; margin-left: auto; }
+.ev-chip { font-size: 11px; padding: 3px 9px; border-radius: 6px; cursor: pointer;
+  background: var(--card-2); border: 1px solid var(--border); color: var(--accent);
+  transition: all .2s; }
+.ev-chip:hover { border-color: var(--accent); transform: translateY(-1px); }
+
+/* authority tiers */
+.tier { font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 99px;
+  white-space: nowrap; }
+.tier-1 { background: rgba(46,204,143,.15); color: var(--green); }
+.tier-2 { background: rgba(79,140,255,.15); color: var(--accent); }
+.tier-3 { background: rgba(245,185,66,.13); color: var(--yellow); }
+.tier-4 { background: rgba(107,118,144,.18); color: var(--gray); }
+.tier-5 { background: rgba(255,93,108,.12); color: var(--red); }
+.src-meta { display: flex; align-items: center; gap: 6px; color: var(--muted); font-size: 11px; }
+
+/* verification badge */
+.verify-badge { display: inline-flex; align-items: center; gap: 8px; margin-top: 10px;
+  font-size: 12.5px; padding: 7px 13px; border-radius: 99px; }
+.verify-badge.pending { background: rgba(107,118,144,.12); color: var(--muted); }
+.verify-badge.ok { background: rgba(46,204,143,.12); color: var(--green);
+  border: 1px solid rgba(46,204,143,.35); }
+.verify-badge.bad { background: rgba(255,93,108,.12); color: var(--red);
+  border: 1px solid rgba(255,93,108,.35); }
+
+/* ============ Evidence Inspector modal ============ */
+.modal-overlay { position: fixed; inset: 0; background: rgba(5,8,14,.75);
+  backdrop-filter: blur(4px); z-index: 50; display: flex;
+  align-items: center; justify-content: center; padding: 20px; }
+.modal { background: var(--bg-2); border: 1px solid var(--border);
+  border-radius: 16px; max-width: 820px; width: 100%; max-height: 86vh;
+  display: flex; flex-direction: column; box-shadow: 0 20px 60px rgba(0,0,0,.5); }
+.modal-head { display: flex; justify-content: space-between; align-items: center;
+  padding: 16px 20px; border-bottom: 1px solid var(--border); }
+.modal-head h4 { font-size: 16px; }
+.modal-close { background: none; border: none; color: var(--muted); font-size: 18px;
+  cursor: pointer; }
+.modal-close:hover { color: var(--text); }
+.modal-body { padding: 18px 20px; overflow-y: auto; }
+.insp-claim { font-size: 15.5px; font-weight: 600; margin-bottom: 6px; }
+.insp-status { display: inline-block; font-size: 11px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: .8px; padding: 3px 11px;
+  border-radius: 99px; margin-bottom: 14px; }
+.modal-body h5 { font-size: 12px; text-transform: uppercase; letter-spacing: 1px;
+  color: var(--muted); margin: 18px 0 10px; }
+.insp-chunk { background: var(--card); border: 1px solid var(--border);
+  border-radius: 10px; padding: 12px 14px; margin-bottom: 10px; }
+.insp-chunk-head { display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+  font-size: 12px; margin-bottom: 8px; }
+.insp-chunk-head a { color: var(--accent); text-decoration: none; }
+.insp-proof { margin-left: auto; font-size: 11px; color: var(--muted); }
+.insp-proof.ok { color: var(--green); }
+.insp-proof.bad { color: var(--red); }
+.insp-text { font-size: 13px; color: #c4cddd; max-height: 180px; overflow-y: auto;
+  line-height: 1.6; }
+.insp-text mark { background: rgba(79,140,255,.3); color: #fff; border-radius: 3px;
+  padding: 1px 2px; }
+.insp-hash { margin-top: 8px; font-size: 11px; color: #4a5670; }
+.insp-hash code { color: var(--muted); }
+.insp-verdicts { display: flex; flex-direction: column; gap: 8px; }
+.insp-v { background: var(--card); border: 1px solid var(--border);
+  border-radius: 10px; padding: 10px 14px; font-size: 13px; }
+.insp-v.v-support { border-left: 3px solid var(--green); }
+.insp-v.v-refute { border-left: 3px solid var(--red); }
+.insp-v.v-insufficient { border-left: 3px solid var(--yellow); }
+.insp-v p { color: var(--muted); margin: 5px 0; }
+.insp-v blockquote { border-left: 2px solid var(--accent); padding-left: 10px;
+  color: #c4cddd; font-style: italic; margin: 6px 0; }
+.insp-sig { font-size: 10px; color: #4a5670; }
