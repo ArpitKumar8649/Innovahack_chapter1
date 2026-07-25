@@ -561,6 +561,16 @@ model auto-fallback to qwen3.6-plus on quota exhaustion.
 - **Exit:** argument tree renders for 100% of multi-hypothesis reports;
   mean report dwell time >60s (the brief's KPI).
 
+**Status — DONE (2026-07-25), measured:** Toulmin argument tree built on every
+report (root claim → hypotheses → supports/attacks evidence edges); on the
+Dubai-floods run it rendered 2 hypotheses (H1: 6▲/1▼, H2: 3▲/0▼) with the
+**weakest link** flagged (a T3 source the argument leans on); 5-axis **Trust
+Radar** (agreement/authority/coverage/diversity/recency) computed from the
+confidence components; collapsible SVG tree + radar + weakest-link banner in
+the React report; **engagement analytics** (dwell time, inspector opens, tree
+views) recorded client-side and aggregated at `/api/analytics` against the
+>60s dwell KPI.
+
 ### Phase 6 — Semantic Layer · *Month 11-13*
 **Goal:** find the evidence keywords can't.
 - ChromaDB evidence index (local embeddings)

@@ -1,7 +1,9 @@
-import { useMemo, useState } from "react";
-import type { Report } from "../../types";
-import type { Attestation } from "../../types";
+import { useEffect, useMemo, useRef, useState } from "react";
+import type { Attestation, Report } from "../../types";
+import { api } from "../../lib/api";
 import { TrustGauge } from "./TrustGauge";
+import { TrustRadarChart } from "./TrustRadar";
+import { ArgumentTreeView } from "./ArgumentTree";
 import { ClaimCard } from "./ClaimCard";
 import { EvidenceInspector } from "./EvidenceInspector";
 
@@ -12,6 +14,52 @@ export function ReportPanel({ report, attestation }: {
   const [inspect, setInspect] = useState<{ claimId: number; chunkId?: string } | null>(null);
   const sources = useMemo(() => new Map(report.sources.map((s) => [s.id, s])), [report]);
   const inspectedClaim = inspect ? report.claims.find((c) => c.id === inspect.claimId) : null;
+
+  // ---- Phase 5 engagement tracking (dwell time, inspector opens, tree views) ----
+  const inspectorOpens = useRef(0);
+  const treeViews = useRef(0);
+  const startedAt = useRef(Date.now());
+  const treeRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    startedAt.current = Date.now();
+    inspectorOpens.current = 0;
+    treeViews.current = 0;
+    const runId = (report as unknown as { run_id?: string }).run_id;
+
+    // count a "tree view" when the argument section scrolls into view
+    const el = treeRef.current;
+    let io: IntersectionObserver | undefined;
+    if (el) {
+      io = new IntersectionObserver(([entry]) => {
+        if (entry.isIntersecting) { treeViews.current += 1; io?.disconnect(); }
+      }, { threshold: 0.3 });
+      io.observe(el);
+    }
+
+    return () => {
+      io?.disconnect();
+      const dwell = Date.now() - startedAt.current;
+      if (dwell > 1500) {
+        api.recordEngagement({
+          run_id: runId ?? report.topic,
+          topic: report.topic,
+          dwell_ms: dwell,
+          inspector_opens: inspectorOpens.current,
+          tree_views: treeViews.current,
+        });
+      }
+    };
+  }, [report]);
+
+  const openInspector = (claimId: number, chunkId?: string) => {
+    inspectorOpens.current += 1;
+    setInspect({ claimId, chunkId });
+  };
+
+  const hasTree = !!report.argument_tree?.root;
+  const radar = report.trust_radar;
+  const weakest = report.argument_tree?.weakest_link;
 
   return (
     <section className="report-panel">
@@ -27,12 +75,34 @@ export function ReportPanel({ report, attestation }: {
           </p>
           <AttestationBadge attestation={attestation} root={report.merkle_root} />
         </div>
+        {radar && (
+          <div className="report-radar">
+            <span className="radar-title mono">trust radar</span>
+            <TrustRadarChart radar={radar} />
+          </div>
+        )}
       </div>
 
       {report.summary && (
         <div className="summary-card">
           <h4 className="section-h">The court's summary</h4>
           <p>{report.summary}</p>
+        </div>
+      )}
+
+      {hasTree && (
+        <div className="argument-section" ref={treeRef}>
+          <h4 className="section-h">The argument <span className="muted">(Toulmin structure)</span></h4>
+          {weakest && (
+            <div className="weakest-link">
+              <span className="weakest-flag">⚠ weakest link</span>
+              <span>{weakest.note}</span>
+              <a href={sources.get(weakest.source_id)?.url} target="_blank" rel="noopener noreferrer" className="mono">
+                [{weakest.source_id}] {weakest.publisher}
+              </a>
+            </div>
+          )}
+          <ArgumentTreeView tree={report.argument_tree} />
         </div>
       )}
 
@@ -51,12 +121,7 @@ export function ReportPanel({ report, attestation }: {
       <h4 className="section-h">Claims & verdicts <span className="muted">({report.claims.length})</span></h4>
       <div className="claims">
         {report.claims.map((c) => (
-          <ClaimCard
-            key={c.id}
-            claim={c}
-            sources={sources}
-            onInspect={(claimId, chunkId) => setInspect({ claimId, chunkId })}
-          />
+          <ClaimCard key={c.id} claim={c} sources={sources} onInspect={openInspector} />
         ))}
       </div>
 

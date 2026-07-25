@@ -1,5 +1,5 @@
 /* REST client for the VeritasAI API (same-origin; proxied to :8000). */
-import type { Attestation, Calibration, Health, MemoryStats, Report, RunSummary } from "../types";
+import type { Attestation, Calibration, Engagement, Health, MemoryStats, Report, RunSummary } from "../types";
 
 async function get<T>(path: string): Promise<T> {
   const res = await fetch(path);
@@ -34,4 +34,17 @@ export const api = {
   memory: () => get<MemoryStats>("/api/memory"),
   calibration: () => get<Calibration>("/api/calibration"),
   health: () => get<Health>("/api/health"),
+  analytics: () => get<Engagement>("/api/analytics"),
+
+  recordEngagement: (payload: {
+    run_id: string; topic: string; dwell_ms: number;
+    inspector_opens: number; tree_views: number;
+  }): void => {
+    // fire-and-forget; engagement is best-effort telemetry
+    fetch("/api/engagement", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify(payload),
+    }).catch(() => {});
+  },
 };

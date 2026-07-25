@@ -138,6 +138,31 @@ async def memory_stats():
     return memory.stats()
 
 
+class EngagementEvent(BaseModel):
+    run_id: str
+    topic: str = ""
+    dwell_ms: int = 0
+    inspector_opens: int = 0
+    tree_views: int = 0
+
+
+@app.post("/api/engagement")
+async def record_engagement(ev: EngagementEvent):
+    """Report engagement analytics (Phase 5) — client posts dwell time etc."""
+    try:
+        journal.record_engagement(ev.run_id, ev.topic, ev.dwell_ms,
+                                  ev.inspector_opens, ev.tree_views)
+    except Exception:
+        pass
+    return {"ok": True}
+
+
+@app.get("/api/analytics")
+async def analytics():
+    """Aggregate report engagement — do users read the debate? (Phase 5 KPI)"""
+    return journal.engagement_stats()
+
+
 @app.get("/api/health")
 async def health():
     return {

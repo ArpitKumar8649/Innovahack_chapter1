@@ -31,6 +31,17 @@ def init():
                 error       TEXT,
                 report      TEXT
             )""")
+        # Phase 5 — report engagement analytics (do users read the debate?)
+        con.execute("""
+            CREATE TABLE IF NOT EXISTS engagement (
+                id              INTEGER PRIMARY KEY AUTOINCREMENT,
+                run_id          TEXT,
+                topic           TEXT,
+                dwell_ms        INTEGER,
+                inspector_opens INTEGER,
+                tree_views      INTEGER,
+                ts              REAL
+            )""")
         cols = [r[1] for r in con.execute("PRAGMA table_info(runs)")]
         if "gold" not in cols:
             con.execute("ALTER TABLE runs ADD COLUMN gold TEXT")
@@ -75,6 +86,38 @@ def list_runs(limit: int = 20) -> list[dict]:
                ORDER BY finished DESC LIMIT ?""", (limit,)).fetchall()
     return [{"run_id": r[0], "topic": r[1], "trust_score": r[2], "error": r[3]}
             for r in rows]
+
+
+# ---------------------------------------------------------------------------
+# engagement analytics (Phase 5)
+# ---------------------------------------------------------------------------
+
+def record_engagement(run_id: str, topic: str, dwell_ms: int,
+                      inspector_opens: int, tree_views: int) -> None:
+    import time
+    with _lock, sqlite3.connect(DB_PATH) as con:
+        con.execute(
+            "INSERT INTO engagement (run_id, topic, dwell_ms, inspector_opens, "
+            "tree_views, ts) VALUES (?,?,?,?,?,?)",
+            (run_id, topic, dwell_ms, inspector_opens, tree_views, time.time()),
+        )
+
+
+def engagement_stats() -> dict:
+    """Aggregate engagement — the brief's KPI: mean report dwell time >60s."""
+    with _lock, sqlite3.connect(DB_PATH) as con:
+        row = con.execute(
+            "SELECT COUNT(*), AVG(dwell_ms), SUM(inspector_opens), SUM(tree_views) "
+            "FROM engagement"
+        ).fetchone()
+    n, avg_ms, opens, views = row
+    return {
+        "reports_viewed": n or 0,
+        "mean_dwell_s": round((avg_ms or 0) / 1000, 1),
+        "inspector_opens": opens or 0,
+        "tree_views": views or 0,
+        "dwell_target_s": 60,
+    }
 
 
 # ---------------------------------------------------------------------------

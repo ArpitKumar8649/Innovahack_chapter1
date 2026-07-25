@@ -108,6 +108,9 @@ class Report(BaseModel):
     transcript: list[dict] = Field(default_factory=list)   # full debate record
     priors: list[dict] = Field(default_factory=list)       # memory at intake
     memory_stats: dict = Field(default_factory=dict)       # learning summary
+    # Phase 5 — argumentation
+    argument_tree: dict = Field(default_factory=dict)      # Toulmin tree + weakest link
+    trust_radar: dict = Field(default_factory=dict)        # 5-axis confidence profile
     # FEC anchors
     merkle_root: str = ""
     run_key: str = ""                # per-run HMAC key (public, for signature checks)

@@ -15,6 +15,7 @@ import secrets
 import time
 
 import authority
+import argument
 import court
 import llm
 import memory
@@ -232,6 +233,14 @@ async def run_pipeline(run: Run):
             run.emit("score", {"claim_id": c.id, "confidence": c.confidence,
                                "status": c.status})
 
+        # --- 7b. ARGUMENT TREE + TRUST RADAR (Phase 5) --------------------------
+        argument_tree = argument.build_argument_tree(claims, hypotheses, sources_by_id)
+        trust_radar = scoring.radar(claims, sources_by_id)
+        run.emit("argument", {"tree": argument_tree, "radar": trust_radar})
+        if argument_tree.get("weakest_link"):
+            wl = argument_tree["weakest_link"]
+            run.log("report", f"weakest link: {wl['note']}")
+
         # --- 8. SYNTHESIS -------------------------------------------------------
         run.emit("stage", {"stage": "report", "status": "started"})
         summary = await _synthesize(topic, claims, contradictions, sources, run)
@@ -244,6 +253,7 @@ async def run_pipeline(run: Run):
             priors=run.priors,
             memory_stats={"cached": len(cached_claims), "new": len(new_claims),
                           "rounds": rounds_used, "priors": len(run.priors)},
+            argument_tree=argument_tree, trust_radar=trust_radar,
             merkle_root=root, run_key=run.run_key, verified=False,
         )
         run.report = report

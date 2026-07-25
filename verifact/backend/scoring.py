@@ -37,6 +37,31 @@ def _agreement(stances: list[str], judge_ruled: bool = False) -> float:
     return 0.33
 
 
+def _components(claim_text, verdicts, chunk_ids, source_ids, sources_by_id, recency):
+    """The six confidence axes (each 0-1) — shared by score_claim and radar."""
+    stances = [v.stance for v in verdicts]
+    judge_ruled = any(getattr(v, "verifier", "") == "J" for v in verdicts)
+    agreement = _agreement(stances, judge_ruled)
+    coverage = min(len(set(chunk_ids)) / 3, 1.0)
+    tiers = [
+        sources_by_id[sid].authority_tier
+        for sid in source_ids if sid in sources_by_id
+    ]
+    authority = max((TIER_WEIGHT[t] for t in tiers), default=0.4)
+    publishers = {
+        sources_by_id[sid].publisher
+        for sid in source_ids
+        if sid in sources_by_id and sources_by_id[sid].publisher
+    }
+    diversity = min(len(publishers) / 2, 1.0)
+    specificity = (
+        0.5 if any(w in claim_text.lower().split() for w in HEDGE_WORDS) else 1.0
+    )
+    return {"agreement": agreement, "coverage": coverage, "authority": authority,
+            "diversity": diversity, "specificity": specificity,
+            "recency": recency, "tiers": tiers}
+
+
 def score_claim(
     claim_text: str,
     verdicts: list,
@@ -51,38 +76,21 @@ def score_claim(
     stances = [v.stance for v in verdicts]
     sup, ref = stances.count("support"), stances.count("refute")
 
-    judge_ruled = any(getattr(v, "verifier", "") == "J" for v in verdicts)
-    agreement = _agreement(stances, judge_ruled)
-    coverage = min(len(set(chunk_ids)) / 3, 1.0)
-
-    tiers = [
-        sources_by_id[sid].authority_tier
-        for sid in source_ids if sid in sources_by_id
-    ]
-    authority = max((TIER_WEIGHT[t] for t in tiers), default=0.4)
-
-    publishers = {
-        sources_by_id[sid].publisher
-        for sid in source_ids
-        if sid in sources_by_id and sources_by_id[sid].publisher
-    }
-    diversity = min(len(publishers) / 2, 1.0)
-
-    specificity = (
-        0.5 if any(w in claim_text.lower().split() for w in HEDGE_WORDS) else 1.0
-    )
+    comp = _components(claim_text, verdicts, chunk_ids, source_ids,
+                       sources_by_id, recency)
+    tiers = comp["tiers"]
 
     high_flag = any(f.get("severity") == "high" for f in hallucination_flags)
     hallu = 1.0 if high_flag else (0.5 if hallucination_flags else 0.0)
     contra = 1.0 if contradiction_flagged else 0.0
 
     conf = (
-        30 * agreement
-        + 20 * coverage
-        + 20 * authority
-        + 10 * diversity
-        + 10 * specificity
-        + 10 * recency
+        30 * comp["agreement"]
+        + 20 * comp["coverage"]
+        + 20 * comp["authority"]
+        + 10 * comp["diversity"]
+        + 10 * comp["specificity"]
+        + 10 * comp["recency"]
         - 35 * contra
         - 20 * hallu
     )
@@ -108,6 +116,29 @@ def score_claim(
     else:
         status = "UNVERIFIABLE"
     return conf, status
+
+
+def radar(claims, sources_by_id) -> dict:
+    """Report-level Trust Radar: mean of each confidence axis across claims.
+
+    Five axes (agreement / authority / coverage / diversity / recency), each
+    0-1 — the brief's "consensus score" visual, computed not vibes.
+    """
+    from authority import recency_score   # local import: avoid a cycle
+    axes = {"agreement": [], "authority": [], "coverage": [],
+            "diversity": [], "recency": []}
+    for c in claims:
+        dates = [
+            sources_by_id[sid].published_at
+            for sid in c.source_ids
+            if sid in sources_by_id
+            and getattr(sources_by_id[sid], "published_at", None)
+        ]
+        comp = _components(c.text, c.verdicts, c.chunk_ids, c.source_ids,
+                           sources_by_id, recency_score(dates))
+        for k in axes:
+            axes[k].append(comp[k])
+    return {k: round(sum(v) / len(v), 3) if v else 0.0 for k, v in axes.items()}
 
 
 def trust_score(claims) -> int:

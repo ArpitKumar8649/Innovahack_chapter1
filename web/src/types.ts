@@ -89,9 +89,67 @@ export interface Report {
   transcript: TranscriptEntry[];
   priors: Prior[];
   memory_stats: { cached: number; new: number; rounds: number; priors: number };
+  argument_tree: ArgumentTree;
+  trust_radar: TrustRadar;
   merkle_root: string;
   run_key: string;
   verified: boolean;
+}
+
+/* ------------------------- Phase 5: argumentation ------------------------- */
+
+export interface TreeEdge {
+  claim_id: number;
+  text: string;
+  relation: "supports" | "attacks";
+  status: Status;
+  confidence: number;
+  verdicts: Record<string, Stance>;
+  source_ids: number[];
+  weight: number;
+}
+
+export interface HypothesisNode {
+  id: string;
+  statement: string;
+  plausibility: number;
+  supports: TreeEdge[];
+  attacks: TreeEdge[];
+  verdicts: Record<string, Stance>;
+}
+
+export interface WeakestLink {
+  source_id: number;
+  claim_id: number;
+  hypothesis: string;
+  tier: number;
+  publisher: string;
+  title: string;
+  note: string;
+}
+
+export interface ArgumentTree {
+  root: { claim_id: number; text: string; status: Status; confidence: number; verdicts: Record<string, Stance> } | null;
+  hypotheses: HypothesisNode[];
+  unattributed: { claim_id: number; text: string; status: Status; confidence: number }[];
+  weakest_link: WeakestLink | null;
+  multi_hypothesis: boolean;
+}
+
+export interface TrustRadar {
+  agreement: number;
+  authority: number;
+  coverage: number;
+  diversity: number;
+  recency: number;
+}
+
+export interface Engagement {
+  reports_viewed: number;
+  mean_dwell_s: number;
+  inspector_opens: number;
+  tree_views: number;
+  dwell_target_s: number;
 }
 
 export interface Attestation {
@@ -131,6 +189,7 @@ export interface ClaimsEvent { claims: Claim[]; }
 export interface CacheEvent { cached: { claim_id: number; text: string; confidence: number; status: Status }[]; }
 export interface VerdictEvent { claim_id: number; verifier: string; stance: Stance; reasoning: string; quote: string; chunk_id: string; span_valid: boolean; }
 export interface DebateEvent { transcript: TranscriptEntry[]; rounds: number; }
+export interface ArgumentEvent { tree: ArgumentTree; radar: TrustRadar; }
 export interface HallucinationEvent extends Hallucination { claim_id: number; }
 export interface ScoreEvent { claim_id: number; confidence: number; status: Status; }
 export interface DoneEvent { run_id: string; elapsed_s: number; claims: number; sources: number; contradictions: number; cached: number; debate_rounds: number; merkle_root: string; }
@@ -146,6 +205,7 @@ export type SseEventMap = {
   cache: CacheEvent;
   verdict: VerdictEvent;
   debate: DebateEvent;
+  argument: ArgumentEvent;
   hallucination: HallucinationEvent;
   contradiction: Contradiction;
   score: ScoreEvent;

@@ -1,12 +1,13 @@
 import { useEffect, useState } from "react";
 import { Reveal } from "../ui/Reveal";
 import { api } from "../../lib/api";
-import type { Calibration, Health, MemoryStats } from "../../types";
+import type { Calibration, Engagement, Health, MemoryStats } from "../../types";
 
 interface Live {
   memory?: MemoryStats;
   calibration?: Calibration;
   health?: Health;
+  engagement?: Engagement;
 }
 
 /** Real numbers pulled from the live API — not marketing. */
@@ -15,21 +16,28 @@ export function LiveNumbers() {
 
   useEffect(() => {
     Promise.allSettled([
-      api.memory(), api.calibration(), api.health(),
-    ]).then(([m, c, h]) => {
+      api.memory(), api.calibration(), api.health(), api.analytics(),
+    ]).then(([m, c, h, e]) => {
       setLive({
         memory: m.status === "fulfilled" ? m.value : undefined,
         calibration: c.status === "fulfilled" ? c.value : undefined,
         health: h.status === "fulfilled" ? h.value : undefined,
+        engagement: e.status === "fulfilled" ? e.value : undefined,
       });
     });
   }, []);
 
+  const eng = live.engagement;
   const stats = [
     { label: "claims learned", value: live.memory?.claims ?? "—", note: "across all runs" },
     { label: "domains classified", value: live.memory?.domains ?? "—", note: "authority registry" },
     { label: "recurring quotes", value: live.memory?.recurring_quotes ?? "—", note: "circular-citation seed" },
     { label: "calibration (ECE)", value: live.calibration?.n ? live.calibration.ece : "—", note: `${live.calibration?.n ?? 0} labeled claims` },
+    {
+      label: "mean report dwell",
+      value: eng && eng.reports_viewed > 0 ? `${eng.mean_dwell_s}s` : "—",
+      note: eng ? `target >${eng.dwell_target_s}s · ${eng.reports_viewed} views` : "no views yet",
+    },
   ];
 
   return (
