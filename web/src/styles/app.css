@@ -59,8 +59,8 @@
 }
 .opening-title { font-size: clamp(38px, 5.4vw, 62px); line-height: 1.06; margin: 18px 0 20px; }
 .opening-title em {
-  font-style: normal; color: var(--gold);
-  text-decoration: underline; text-decoration-color: rgba(217,164,65,0.4);
+  font-style: normal; color: var(--rose);
+  text-decoration: underline; text-decoration-color: rgba(244,63,94,0.4);
   text-decoration-thickness: 3px; text-underline-offset: 7px;
 }
 .opening-sub { color: var(--ink-2); font-size: 16.5px; max-width: 520px; }
@@ -119,14 +119,14 @@
 }
 .receipt:first-child { border-radius: var(--r-lg) var(--r-lg) 0 0; }
 .receipt:last-child { border-radius: 0 0 var(--r-lg) var(--r-lg); margin-bottom: 0; }
-.receipt:hover { transform: translateX(6px); z-index: 2; border-color: var(--gold); }
-.receipt-no { font-size: 22px; font-weight: 700; color: var(--gold); opacity: 0.85; min-width: 40px; }
+.receipt:hover { transform: translateX(6px); z-index: 2; border-color: var(--rose); }
+.receipt-no { font-size: 22px; font-weight: 700; color: var(--rose); opacity: 0.85; min-width: 40px; }
 .receipt-title { font-family: var(--font-display); font-size: 17px; font-weight: 700; margin-bottom: 5px; }
 .receipt-body p { font-size: 13.5px; color: var(--ink-2); }
 .receipt-tag {
   margin-left: auto; align-self: center;
-  font-size: 10px; color: var(--gold); border: 1px solid rgba(217,164,65,0.4);
-  background: var(--gold-soft); border-radius: 99px; padding: 4px 10px; white-space: nowrap;
+  font-size: 10px; color: var(--rose); border: 1px solid rgba(244,63,94,0.4);
+  background: var(--rose-soft); border-radius: 99px; padding: 4px 10px; white-space: nowrap;
 }
 .receipt-perf {
   position: absolute; left: 0; right: 0; bottom: -5px; height: 5px;
@@ -144,8 +144,8 @@
   background: var(--panel); border: 1px solid var(--line); border-radius: var(--r-md);
   padding: 20px; transition: transform var(--dur) var(--ease), border-color var(--dur);
 }
-.stat-tile:hover { transform: translateY(-3px); border-color: var(--accent); }
-.stat-value { font-size: 38px; color: var(--gold); line-height: 1; }
+.stat-tile:hover { transform: translateY(-3px); border-color: var(--rose); }
+.stat-value { font-size: 38px; color: var(--rose); line-height: 1; }
 .stat-label { font-size: 13.5px; font-weight: 600; margin-top: 8px; }
 .stat-note { font-size: 10.5px; color: var(--ink-3); margin-top: 3px; }
 .numbers-model { margin-top: 18px; font-size: 12px; color: var(--ink-3); }
@@ -159,8 +159,8 @@
   border-radius: var(--r-md); padding: 16px;
   transition: transform var(--dur) var(--ease), border-color var(--dur);
 }
-.flow-item:hover { transform: translateY(-3px); border-color: var(--gold); }
-.flow-no { color: var(--gold); font-weight: 700; font-size: 15px; }
+.flow-item:hover { transform: translateY(-3px); border-color: var(--rose); }
+.flow-no { color: var(--rose); font-weight: 700; font-size: 15px; }
 .flow-title { font-weight: 700; font-size: 14.5px; }
 .flow-desc { font-size: 12.5px; color: var(--ink-2); margin-top: 4px; }
 
@@ -168,7 +168,7 @@
 .cta { padding: 64px 24px 20px; }
 .cta-card {
   text-align: left; background: linear-gradient(140deg, var(--panel-2), var(--panel));
-  border: 1px solid rgba(217,164,65,0.35); border-radius: var(--r-lg);
+  border: 1px solid rgba(244,63,94,0.35); border-radius: var(--r-lg);
   padding: 44px 40px; box-shadow: var(--shadow-2);
 }
 .cta-card h2 { font-size: clamp(26px, 3.6vw, 40px); margin-bottom: 10px; }
