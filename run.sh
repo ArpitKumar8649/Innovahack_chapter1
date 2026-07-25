@@ -4,6 +4,9 @@
 set -euo pipefail
 cd "$(dirname "$0")/verifact/backend"
 
+# load local env (LLM routing etc.) if present
+[ -f .env ] && set -a && . ./.env && set +a
+
 if ! python3 -c "import fastapi, uvicorn, httpx" 2>/dev/null; then
   echo "Installing dependencies…"
   pip install -r requirements.txt

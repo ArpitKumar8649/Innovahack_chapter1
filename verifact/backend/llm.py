@@ -25,10 +25,10 @@ CHAT_URL = os.environ.get(
 MODEL = os.environ.get("LLM_MODEL", "qwen3.7-max-2026-06-08")
 API_KEY = os.environ.get(
     "DASHSCOPE_API_KEY",
-    "sk-ws-H.LIEMPD.DpZK.MEUCIA7GLanKjqNWA0UKOWsBVdGLaMhqZYh3BHYqMNL9Z_oGAiEA2u1dfrMN6KjNoVmBrQWrYwbfdlgRtKnRIfpRSym-z5M",
+    "sk-ws-H.YLIERH.4UJP.MEYCIQCG4DPU929kkt1rbKAoDCfzXsVoRty7M-hKYoD2BnbpeQIhAKBBA16xW6vOHu7knYDgFJ_yXsm9mOanyjb-5Xwm1tH4",
 )
 
-_use_chat = False  # flips True if the Responses endpoint 404s once
+_use_chat = os.environ.get("LLM_USE_CHAT", "") == "1"  # chat endpoint first
 
 # Global concurrency cap across all agent calls — DashScope's dev tier
 # returns 403 under bursty concurrent load (measured in the eval harness).
