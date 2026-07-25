@@ -27,6 +27,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "verifact" / "backend"))
 
 from pipeline import Run, run_pipeline  # noqa: E402
+import journal  # noqa: E402
 
 HERE = Path(__file__).resolve().parent
 DEFAULT_CLAIMS = HERE / "claims.jsonl"
@@ -113,6 +114,10 @@ async def evaluate_one(entry: dict) -> dict:
     t0 = time.time()
     await run_pipeline(run)
     elapsed = round(time.time() - t0, 1)
+    try:
+        journal.save_run(run)  # persist with gold for the calibration endpoint
+    except Exception:
+        pass
     if run.error or run.report is None:
         return {"id": entry["id"], "claim": entry["claim"], "gold": entry["gold"],
                 "category": entry.get("category", ""), "predicted": None,
@@ -222,6 +227,7 @@ def main():
         data = json.loads(args.from_results.read_text())
         rows, summary = data["results"], data["summary"]
     else:
+        journal.init()
         claims = load_claims(args.claims, only_fast=not args.all)
         print(f"Evaluating {len(claims)} claims (concurrency={args.concurrency})…\n")
         rows = asyncio.run(run_suite(claims, args.concurrency))

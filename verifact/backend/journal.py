@@ -71,6 +71,7 @@ def list_runs(limit: int = 20) -> list[dict]:
     with _lock, sqlite3.connect(DB_PATH) as con:
         rows = con.execute(
             """SELECT run_id, topic, trust_score, error FROM runs
+               WHERE run_id NOT LIKE 'eval-%'
                ORDER BY finished DESC LIMIT ?""", (limit,)).fetchall()
     return [{"run_id": r[0], "topic": r[1], "trust_score": r[2], "error": r[3]}
             for r in rows]
