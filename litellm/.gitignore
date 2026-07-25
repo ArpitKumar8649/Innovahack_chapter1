@@ -1,0 +1,12 @@
+# --- secrets & generated artifacts (never commit) ---
+.env
+config.yaml
+.venv/
+__pycache__/
+*.log
+proxy.pid
+
+# --- OS / editor noise ---
+.DS_Store
+*.swp
+*~

@@ -1,0 +1,2 @@
+litellm[proxy]
+prisma  # needed by LiteLLM's auth error handler (else unauthenticated requests 500)

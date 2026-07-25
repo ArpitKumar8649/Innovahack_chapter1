@@ -1,0 +1,11 @@
+# runtime artifacts
+verifact/data/
+__pycache__/
+*.pyc
+.venv/
+*.log
+.env
+
+# OS / editor
+.DS_Store
+*.swp
