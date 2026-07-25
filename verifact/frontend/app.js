@@ -15,12 +15,13 @@
     verifyBadge: $("verifyBadge"), verifyText: $("verifyText"),
     historyList: $("historyList"), historySection: $("historySection"),
     errorBanner: $("errorBanner"),
+    priorsBanner: $("priorsBanner"), debateTranscript: $("debateTranscript"),
     modal: $("inspectorModal"), modalClose: $("modalClose"), inspectorBody: $("inspectorBody"),
   };
 
   const STAGE_AGENT = {
-    hypothesize: "murli", research: "researcher", extract: "extractor",
-    verify: null, hallucinations: "hallucination",
+    intake: null, hypothesize: "murli", research: "researcher", extract: "extractor",
+    verify: null, deliberate: null, hallucinations: "hallucination",
     contradictions: "contradiction", report: "writer",
   };
   const TIER_LABEL = { 1: "primary / peer-reviewed", 2: "established reference",
@@ -83,6 +84,8 @@
         <span class="vb vb-A" title="Verifier A — Evidentialist">A ·</span>
         <span class="vb vb-B" title="Verifier B — Skeptic">B ·</span>
         <span class="vb vb-C" title="Verifier C — Contextualist">C ·</span>
+        <span class="vb vb-M hidden" title="Memory — reused from a prior run">M ·</span>
+        <span class="vb vb-J hidden" title="Judge — ruled after deliberation">J ·</span>
         <span class="lc-conf"></span>
       </div>`;
     els.liveClaims.appendChild(el);
@@ -90,8 +93,10 @@
   function updateVerdict(claimId, v) {
     const badge = document.querySelector(`#lc-${claimId} .vb-${v.verifier}`);
     if (!badge) return;
+    badge.classList.remove("hidden");
     const mark = v.stance === "support" ? "✓" : v.stance === "refute" ? "✗" : "–";
-    badge.textContent = `${v.verifier} ${mark}${v.span_valid ? "" : "∅"}`;
+    const act = { concede: "↩", rebut: "⚔", hold: "≡", judge: "⚖", cache: "💾" }[v.action] || "";
+    badge.textContent = `${v.verifier} ${mark}${v.span_valid ? "" : "∅"}${act}`;
     badge.classList.add(`v-${v.stance}`);
     if (!v.span_valid && v.quote) badge.classList.add("v-void");
     if (v.stance === "refute")
@@ -106,17 +111,67 @@
     conf.innerHTML = `<span class="conf-pill ${stCls(status)}">${label}</span>`;
   }
 
+  // ---------- Phase 3: memory priors + debate transcript ----------
+  const ACT_LABEL = { concede: "concedes", rebut: "rebuts", hold: "holds",
+    judge: "rules", cache: "from memory", verdict: "verdict" };
+
+  function renderPriors(d) {
+    if (!d.priors || !d.priors.length) { els.priorsBanner.classList.add("hidden"); return; }
+    els.priorsBanner.classList.remove("hidden");
+    els.priorsBanner.innerHTML =
+      `<h4 class="section-h">🧠 Memory recall — prior findings</h4>` +
+      d.priors.map((p) =>
+        `<div class="prior-card">
+          <div class="prior-text">${esc(p.text)}</div>
+          <div class="prior-meta"><span class="claim-status ${stCls(p.status)}">${esc(p.status)}</span>
+            ${p.confidence}% · verified ${p.age_days}d ago · seen ${p.times_seen}×</div>
+        </div>`).join("");
+  }
+
+  function transcriptEntry(e) {
+    const roundTag = e.round === 0 ? "M" : e.round === 1 ? "R1" : e.round === 2 ? "R2" : "R3";
+    return `<div class="dt-entry dt-r${e.round} v-${e.stance}">
+      <div class="dt-head">
+        <span class="dt-round">${roundTag}</span>
+        <b>${e.verifier === "J" ? "⚖️ Judge" : e.verifier === "M" ? "💾 Memory" : "Verifier " + esc(e.verifier)}</b>
+        <span class="dt-action act-${e.action}">${esc(ACT_LABEL[e.action] || e.action)}</span>
+        <span class="dt-stance v-${e.stance}">${esc(e.stance)}</span>
+        <span class="dt-claim">C${e.claim_id}</span>
+      </div>
+      <p>${esc(e.reasoning)}</p>
+      ${e.quote ? `<blockquote>“${esc(e.quote.slice(0, 240))}” <span class="dt-chunk">${esc(e.chunk_id)}</span></blockquote>` : ""}
+      ${e.dissent ? `<div class="dt-dissent">📝 dissent recorded: ${esc(e.dissent)}</div>` : ""}
+    </div>`;
+  }
+
+  function renderDebate(d) {
+    const t = (d.transcript || []).filter((e) => e.round > 1);
+    if (!t.length) { els.debateTranscript.classList.add("hidden"); return; }
+    els.debateTranscript.classList.remove("hidden");
+    els.debateTranscript.innerHTML =
+      `<h4 class="section-h">⚔️ Deliberation transcript — ${d.rounds} round${d.rounds > 1 ? "s" : ""}</h4>` +
+      t.map(transcriptEntry).join("");
+  }
+
   // ---------- report rendering ----------
   function renderReport(report) {
     currentReport = report;
     const sources = new Map(report.sources.map((s) => [s.id, s]));
 
+    // Phase 3 sections — memory recall + deliberation transcript
+    renderPriors({ priors: report.priors || [] });
+    renderDebate({ transcript: report.transcript || [],
+                   rounds: report.memory_stats?.rounds || 1 });
+
     els.reportTopic.textContent = report.topic;
     const refuted = report.claims.filter((c) => c.status === "REFUTED").length;
+    const ms = report.memory_stats || {};
     els.reportStats.textContent =
       `${report.claims.length} claims · ${report.sources.length} sources · ` +
       `${report.contradictions.length} contradictions` +
       (refuted ? ` · ${refuted} refuted` : "") +
+      (ms.cached ? ` · ${ms.cached} from memory` : "") +
+      (ms.rounds > 1 ? ` · ${ms.rounds} debate rounds` : "") +
       ` · Merkle ${report.merkle_root.slice(0, 10)}…`;
 
     els.gaugeFg.style.strokeDasharray = CIRC;
@@ -166,11 +221,14 @@
   }
 
   function renderClaimCard(c, sources) {
-    const verdicts = (c.verdicts || []).map((v) =>
-      `<span class="vb v-${v.stance}${v.span_valid ? "" : " v-void"}"
-             title="${esc(v.reasoning)}&#10;${v.span_valid ? "quote verified in corpus" : "quote NOT found in corpus — verdict voided"}">
-        ${v.verifier} ${v.stance === "support" ? "✓" : v.stance === "refute" ? "✗" : "–"}${v.span_valid ? "" : "∅"}</span>`
-    ).join("");
+    const verdicts = (c.verdicts || []).map((v) => {
+      const act = { concede: "↩ conceded", rebut: "⚔ rebutted", hold: "≡ held",
+        judge: "⚖ judge", cache: "💾 memory" }[v.action] || "";
+      const rtag = v.round > 1 ? ` R${v.round}` : "";
+      const title = `${esc(v.reasoning)}&#10;${v.span_valid ? "quote verified in corpus" : "quote NOT found in corpus — verdict voided"}`;
+      return `<span class="vb v-${v.stance}${v.span_valid ? "" : " v-void"}" title="${title}">
+        ${v.verifier} ${v.stance === "support" ? "✓" : v.stance === "refute" ? "✗" : "–"}${v.span_valid ? "" : "∅"}${rtag ? `<i>${rtag}${act ? " " + esc(act) : ""}</i>` : ""}</span>`;
+    }).join("");
     const hallu = (c.hallucinations || []).map((h) =>
       `<div class="hallu-flag hallu-${h.severity}">🕳 ${esc(h.type)} — ${esc(h.evidence)}
         ${h.correction ? `<br><b>Correction:</b> ${esc(h.correction)}` : ""}</div>`).join("");
@@ -180,9 +238,11 @@
       const s = sources.get(n);
       return s ? `<a class="cite" href="${esc(s.url)}" target="_blank" rel="noopener">[${n}]</a>` : "";
     }).join("");
-    return `<div class="claim-card ${stCls(c.status)}">
+    const fromMemory = (c.verdicts || []).some((v) => v.verifier === "M");
+    return `<div class="claim-card ${stCls(c.status)}${fromMemory ? " from-memory" : ""}">
       <div class="claim-head">
         <span class="claim-status ${stCls(c.status)}">${esc(c.status)}</span>
+        ${fromMemory ? `<span class="mem-tag" title="Verdict reused from cross-run memory (verified <24h ago)">💾 from memory</span>` : ""}
         <span class="claim-type">${esc(c.claim_type)}${c.hypothesis_id ? " · " + esc(c.hypothesis_id) : ""}</span>
         <div class="conf-bar"><div class="conf-fill ${stCls(c.status)}" style="width:${c.confidence}%"></div>
           <span class="conf-num">${c.confidence}%</span></div>
@@ -325,6 +385,8 @@
     els.liveFeed.innerHTML = "";
     els.liveClaims.innerHTML = "";
     els.hypothesisCards.innerHTML = "";
+    els.priorsBanner.classList.add("hidden");
+    els.debateTranscript.classList.add("hidden");
     els.reportSection.classList.add("hidden");
     els.pipelineSection.classList.remove("hidden");
     els.hero.classList.add("dimmed");
@@ -346,7 +408,35 @@
       }
       if (d.stage === "verify" && d.status === "done")
         ["verifier-a", "verifier-b", "verifier-c"].forEach((a) => setAgent(a, "done"));
+      if (d.stage === "deliberate" && d.status === "started") {
+        setAgent("judge", "active");
+        feed("⚔️ <b>panel split — deliberation begins</b>: verifiers read each other's verdicts and must concede, rebut, or hold");
+      }
+      if (d.stage === "deliberate" && d.status === "done")
+        setAgent("judge", d.rounds > 2 ? "done" : "");
       feed(`▶ stage <b>${d.stage}</b> ${d.status}`);
+    });
+
+    on("priors", (d) => {
+      renderPriors(d);
+      feed(`🧠 <b>memory recall</b>: ${d.priors.length} prior finding(s) loaded from past investigations`);
+    });
+
+    on("cache", (d) => {
+      d.cached.forEach((c) => {
+        renderLiveClaim({ id: c.claim_id, text: c.text });
+        updateVerdict(c.claim_id, { verifier: "M", stance: "support", action: "cache", span_valid: true });
+        updateScore(c.claim_id, c.confidence, c.status);
+      });
+      feed(`💾 <b>${d.cached.length} claim(s) reused from memory</b> — verified <24h ago, skipping the panel`);
+    });
+
+    on("debate", (d) => {
+      (d.transcript || []).filter((e) => e.round > 1).forEach((e) =>
+        updateVerdict(e.claim_id, e));
+      const n = (d.transcript || []).filter((e) => e.round > 1).length;
+      feed(`⚔️ deliberation closed after <b>${d.rounds} rounds</b> — ${n} exchange(s) on the record`);
+      if (d.rounds > 2) feed("⚖️ <b>the Judge ruled</b> on claims the panel could not settle", "feed-refute");
     });
 
     on("hypotheses", (d) => {
@@ -481,6 +571,19 @@
       if (d.n > 0) {
         $("calibrationNote").textContent =
           ` · calibration (ECE): ${d.ece} over ${d.n} labeled claims`;
+      }
+    } catch {}
+  })();
+
+  // memory footer — what the court has learned across runs
+  (async () => {
+    try {
+      const r = await fetch("/api/memory");
+      const d = await r.json();
+      if (d.claims > 0) {
+        $("memoryNote").textContent =
+          ` · memory: ${d.claims} claims learned · ${d.domains} domains classified` +
+          (d.recurring_quotes ? ` · ${d.recurring_quotes} recurring quotes` : "");
       }
     } catch {}
   })();

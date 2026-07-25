@@ -529,6 +529,14 @@ continuous self-audit**. A regression in trap catch-rate blocks the merge.
 - **Exit:** re-running a topic is 40%+ faster (cache hits) and cites prior
   findings; split-verdict claims show the debate transcript.
 
+**Status — DONE (2026-07-25), measured:** re-run **56% faster** (55s→24s) via
+topic-level evidence cache + claim cache (7/9 claims reused from memory);
+6 priors recalled at intake; R2 deliberation observed (concede/rebut/hold
+with cited evidence spans); Judge rules on unresolved splits with recorded
+dissent; attestation intact on cached runs (Merkle + 9/9 signatures);
+content-hash index flags recurring quotes (circular-citation seed);
+model auto-fallback to qwen3.6-plus on quota exhaustion.
+
 ### Phase 4 — Debate Theater & Argument Trees · *Month 7-9*
 **Goal:** the trust gap closes visually.
 - Argument tree extraction + Toulmin structure + weakest-link indicator

@@ -23,12 +23,25 @@ CHAT_URL = os.environ.get(
     "https://dashscope-intl.aliyuncs.com/compatible-mode/v1/chat/completions",
 )
 MODEL = os.environ.get("LLM_MODEL", "qwen3.7-max-2026-06-08")
+FALLBACK_MODEL = os.environ.get("LLM_FALLBACK_MODEL", "qwen3.6-plus")
 API_KEY = os.environ.get(
     "DASHSCOPE_API_KEY",
     "sk-ws-H.YLIERH.4UJP.MEYCIQCG4DPU929kkt1rbKAoDCfzXsVoRty7M-hKYoD2BnbpeQIhAKBBA16xW6vOHu7knYDgFJ_yXsm9mOanyjb-5Xwm1tH4",
 )
 
 _use_chat = os.environ.get("LLM_USE_CHAT", "") == "1"  # chat endpoint first
+_model_override: str | None = None   # set when the primary model's quota runs out
+
+_QUOTA_MARKERS = ("free quota has been exhausted", "FreeTierOnly",
+                  "quota has been exhausted", "AllocationQuota")
+
+
+def current_model() -> str:
+    return _model_override or MODEL
+
+
+def _quota_exhausted(body: str) -> bool:
+    return any(m in body for m in _QUOTA_MARKERS)
 
 # Global concurrency cap across all agent calls — DashScope's dev tier
 # returns 403 under bursty concurrent load (measured in the eval harness).
@@ -96,8 +109,8 @@ async def chat(
     the verifier panel can run model-diverse (one model per verifier) or
     persona-diverse (same model, different lenses) purely by config.
     """
-    global _use_chat
-    model = model or MODEL
+    global _use_chat, _model_override
+    model = model or current_model()
     last_err = None
     for attempt in range(8):
         try:
@@ -121,7 +134,14 @@ async def chat(
                     log("responses endpoint unavailable, using chat endpoint")
                 continue
             if resp.status_code in (429, 403):
-                # 429 = rate limit; 403 = DashScope's concurrency/quota cap
+                # quota exhausted → fall back to the backup model (once)
+                if _quota_exhausted(resp.text) and model != FALLBACK_MODEL:
+                    _model_override = FALLBACK_MODEL
+                    model = FALLBACK_MODEL
+                    if log:
+                        log(f"quota exhausted on primary model — switching to {FALLBACK_MODEL}")
+                    continue
+                # else: rate limit / concurrency cap → back off and retry
                 wait = _retry_after(resp.text, attempt)
                 if log:
                     log(f"rate-limited ({resp.status_code}), waiting {wait}s")

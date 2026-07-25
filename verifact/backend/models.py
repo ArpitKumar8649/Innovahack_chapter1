@@ -45,13 +45,16 @@ class Hypothesis(BaseModel):
 # ---------------------------------------------------------------------------
 
 class Verdict(BaseModel):
-    verifier: str                    # "A" | "B" | "C"
+    verifier: str                    # "A" | "B" | "C" | "J" (judge) | "M" (memory)
     stance: str                      # support | refute | insufficient
     reasoning: str
     quote: str = ""                  # exact evidence span (span-gate enforced)
     chunk_id: str = ""
     span_valid: bool = False         # quote verified against corpus
     signature: str = ""              # HMAC over canonical verdict fields
+    round: int = 1                   # 1 = independent, 2 = deliberation, 3 = judge
+    action: str = ""                 # concede | rebut | hold | judge | cache
+    dissent: str = ""                # judge's record of the losing side's argument
 
 
 class Claim(BaseModel):
@@ -101,6 +104,10 @@ class Report(BaseModel):
     claims: list[Claim] = Field(default_factory=list)
     sources: list[Source] = Field(default_factory=list)
     contradictions: list[Contradiction] = Field(default_factory=list)
+    # Phase 3 — deliberation & memory
+    transcript: list[dict] = Field(default_factory=list)   # full debate record
+    priors: list[dict] = Field(default_factory=list)       # memory at intake
+    memory_stats: dict = Field(default_factory=dict)       # learning summary
     # FEC anchors
     merkle_root: str = ""
     run_key: str = ""                # per-run HMAC key (public, for signature checks)

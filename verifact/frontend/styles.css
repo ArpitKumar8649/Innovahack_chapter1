@@ -377,3 +377,47 @@ footer {
 .insp-v blockquote { border-left: 2px solid var(--accent); padding-left: 10px;
   color: #c4cddd; font-style: italic; margin: 6px 0; }
 .insp-sig { font-size: 10px; color: #4a5670; }
+
+/* ---------- Phase 3: memory priors ---------- */
+.priors-banner { margin: 18px 0 4px; }
+.prior-card { background: linear-gradient(135deg, rgba(124,92,255,.10), rgba(79,140,255,.06));
+  border: 1px solid rgba(124,92,255,.35); border-radius: 10px;
+  padding: 10px 14px; margin-bottom: 8px; }
+.prior-text { font-size: 13.5px; margin-bottom: 5px; }
+.prior-meta { display: flex; align-items: center; gap: 8px; font-size: 11.5px; color: var(--muted); }
+
+/* ---------- Phase 3: debate transcript ---------- */
+.debate-transcript { margin: 22px 0 4px; }
+.dt-entry { background: var(--card); border: 1px solid var(--border);
+  border-radius: 10px; padding: 11px 14px; margin-bottom: 8px; font-size: 13px; }
+.dt-entry.dt-r2 { border-left: 3px solid var(--accent-2); }
+.dt-entry.dt-r3 { border-left: 3px solid var(--yellow);
+  background: linear-gradient(135deg, rgba(245,185,66,.08), var(--card)); }
+.dt-head { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 5px; }
+.dt-round { font-size: 10px; font-weight: 700; color: var(--muted);
+  background: var(--bg-2); border: 1px solid var(--border); border-radius: 5px; padding: 1px 6px; }
+.dt-action { font-size: 11px; font-weight: 600; padding: 1px 8px; border-radius: 99px; }
+.act-concede { color: var(--green); background: rgba(46,204,143,.12); }
+.act-rebut { color: var(--red); background: rgba(255,93,108,.12); }
+.act-hold { color: var(--muted); background: rgba(107,118,144,.15); }
+.act-judge { color: var(--yellow); background: rgba(245,185,66,.14); }
+.dt-stance { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; }
+.dt-stance.v-support { color: var(--green); }
+.dt-stance.v-refute { color: var(--red); }
+.dt-stance.v-insufficient { color: var(--yellow); }
+.dt-claim { margin-left: auto; font-size: 11px; color: #4a5670; }
+.dt-entry p { color: var(--muted); margin: 4px 0; }
+.dt-entry blockquote { border-left: 2px solid var(--accent); padding-left: 10px;
+  color: #c4cddd; font-style: italic; margin: 6px 0; font-size: 12.5px; }
+.dt-chunk { font-style: normal; font-size: 10.5px; color: #4a5670; }
+.dt-dissent { margin-top: 7px; font-size: 12px; color: var(--yellow);
+  background: rgba(245,185,66,.07); border-radius: 7px; padding: 6px 10px; }
+
+/* ---------- Phase 3: memory badges ---------- */
+.mem-tag { font-size: 10.5px; color: var(--accent-2); background: rgba(124,92,255,.14);
+  border: 1px solid rgba(124,92,255,.4); border-radius: 99px; padding: 1px 9px; }
+.claim-card.from-memory { border-color: rgba(124,92,255,.45); }
+.vb i { font-style: normal; font-size: 9.5px; opacity: .85; }
+.vb-M { color: var(--accent-2); border-color: rgba(124,92,255,.5); }
+.vb-J { color: var(--yellow); border-color: rgba(245,185,66,.5); }
+.memory-note { color: var(--muted); font-size: 12px; }

@@ -22,6 +22,7 @@ from pydantic import BaseModel
 
 import journal
 import llm
+import memory
 import tavily_client
 from pipeline import Run, run_pipeline
 
@@ -36,6 +37,7 @@ RUNS: dict[str, Run] = {}
 @app.on_event("startup")
 def _startup():
     journal.init()
+    memory.init()
 
 
 class ResearchRequest(BaseModel):
@@ -129,11 +131,19 @@ async def calibration():
     return journal.calibration()
 
 
+@app.get("/api/memory")
+async def memory_stats():
+    """Cross-run memory state (Phase 3): claims learned, domains classified,
+    content hashes indexed, recurring quotes (circular-citation seed)."""
+    return memory.stats()
+
+
 @app.get("/api/health")
 async def health():
     return {
         "status": "ok",
         "version": "2.0.0",
-        "llm_model": llm.MODEL,
+        "llm_model": llm.current_model(),
+        "llm_fallback": llm.FALLBACK_MODEL,
         "tavily_configured": bool(tavily_client.TAVILY_API_KEY),
     }

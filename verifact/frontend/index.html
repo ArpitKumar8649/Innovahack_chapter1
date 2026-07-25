@@ -23,6 +23,7 @@
     <span class="ab" data-agent="verifier-a">Verifier A</span>
     <span class="ab" data-agent="verifier-b">Verifier B</span>
     <span class="ab" data-agent="verifier-c">Verifier C</span>
+    <span class="ab" data-agent="judge">Judge</span>
     <span class="ab" data-agent="hallucination">Hallucination Det.</span>
     <span class="ab" data-agent="contradiction">Contradiction Det.</span>
     <span class="ab" data-agent="writer">Synthesis</span>
@@ -56,6 +57,7 @@
       <div class="pstage" data-stage="research"><span class="picon">🔍</span><span>Evidence</span></div>
       <div class="pstage" data-stage="extract"><span class="picon">🧩</span><span>Claims</span></div>
       <div class="pstage" data-stage="verify"><span class="picon">⚖️</span><span>Court ×3</span></div>
+      <div class="pstage" data-stage="deliberate"><span class="picon">⚔️</span><span>Deliberate</span></div>
       <div class="pstage" data-stage="hallucinations"><span class="picon">🕳️</span><span>Hallucinations</span></div>
       <div class="pstage" data-stage="contradictions"><span class="picon">⚠️</span><span>Contradictions</span></div>
       <div class="pstage" data-stage="report"><span class="picon">📜</span><span>Verdict</span></div>
@@ -87,6 +89,8 @@
       </div>
     </div>
 
+    <div id="priorsBanner" class="priors-banner hidden"></div>
+    <div id="debateTranscript" class="debate-transcript hidden"></div>
     <div class="summary-card" id="summaryCard"></div>
     <div id="contradictionsBlock"></div>
 
@@ -118,8 +122,9 @@
 <div class="error-banner hidden" id="errorBanner"></div>
 <footer>
   VeritasAI · Murli self-adversarial agent · 3-verifier court · Serper + Tavily evidence ·
-  Qwen LLM · FEC: SHA-256 + Merkle anchoring + signed verdicts
+  Qwen LLM · FEC: SHA-256 + Merkle anchoring + signed verdicts · multi-turn debate + cross-run memory
   <span id="calibrationNote" class="calibration-note"></span>
+  <span id="memoryNote" class="memory-note"></span>
 </footer>
 <script src="app.js"></script>
 </body>

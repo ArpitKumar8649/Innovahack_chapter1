@@ -25,13 +25,15 @@ HEDGE_WORDS = (
 )
 
 
-def _agreement(stances: list[str]) -> float:
+def _agreement(stances: list[str], judge_ruled: bool = False) -> float:
     n = len(stances) or 1
     sup, ref = stances.count("support"), stances.count("refute")
     if sup == n or ref == n:
         return 1.0
     if max(sup, ref) / n >= 2 / 3:
         return 0.66
+    if judge_ruled and max(sup, ref) > min(sup, ref):
+        return 0.55   # judge-broken tie — a decided but weak majority
     return 0.33
 
 
@@ -49,7 +51,8 @@ def score_claim(
     stances = [v.stance for v in verdicts]
     sup, ref = stances.count("support"), stances.count("refute")
 
-    agreement = _agreement(stances)
+    judge_ruled = any(getattr(v, "verifier", "") == "J" for v in verdicts)
+    agreement = _agreement(stances, judge_ruled)
     coverage = min(len(set(chunk_ids)) / 3, 1.0)
 
     tiers = [
