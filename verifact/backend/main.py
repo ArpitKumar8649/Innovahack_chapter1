@@ -1,31 +1,29 @@
 """VeritasAI API — the Research Court.
 
+API-only backend. The frontend is served separately: nginx in production
+(deploy/nginx.conf), serve_frontend.py in development. This process never
+serves static files.
+
 POST /api/research                 start a run → {run_id}
 GET  /api/research/{id}/stream     SSE live event stream
 GET  /api/research/{id}            final report JSON
 GET  /api/reports/{id}/verify      cryptographic re-attestation (FEC L2-L4)
 GET  /api/runs                     past investigations
 GET  /api/health                   liveness + config
-GET  /                             frontend (static)
 """
 import asyncio
 import json
 import uuid
-from pathlib import Path
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
-from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
 import journal
 import llm
 import tavily_client
 from pipeline import Run, run_pipeline
-
-HERE = Path(__file__).resolve().parent
-FRONTEND_DIR = HERE.parent / "frontend"
 
 app = FastAPI(title="VeritasAI", version="2.0.0")
 app.add_middleware(
@@ -132,7 +130,3 @@ async def health():
         "llm_model": llm.MODEL,
         "tavily_configured": bool(tavily_client.TAVILY_API_KEY),
     }
-
-
-if FRONTEND_DIR.exists():
-    app.mount("/", StaticFiles(directory=str(FRONTEND_DIR), html=True), name="app")

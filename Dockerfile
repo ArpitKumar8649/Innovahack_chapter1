@@ -1,4 +1,10 @@
+# VeritasAI — production image: nginx edge + API in one container.
+# nginx serves the frontend on :8080 and proxies /api/* to uvicorn on :8000.
 FROM python:3.12-slim
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends nginx \
+    && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
@@ -6,8 +12,11 @@ COPY verifact/backend/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 COPY verifact/ ./verifact/
+COPY verifact/frontend/ /usr/share/nginx/html/
+COPY deploy/nginx.conf /etc/nginx/nginx.conf
+COPY deploy/entrypoint.sh /app/entrypoint.sh
+RUN chmod +x /app/entrypoint.sh
 
-WORKDIR /app/verifact/backend
-EXPOSE 8000
+EXPOSE 8080
 
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["/app/entrypoint.sh"]
