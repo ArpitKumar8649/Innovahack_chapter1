@@ -14,6 +14,8 @@ export function ReportPanel({ report, attestation, runId }: {
   runId?: string;
 }) {
   const [inspect, setInspect] = useState<{ claimId: number; chunkId?: string } | null>(null);
+  const [complianceTrace, setComplianceTrace] = useState<any | null>(null);
+  const [replayResult, setReplayResult] = useState<any | null>(null);
   const sources = useMemo(() => new Map(report.sources.map((s) => [s.id, s])), [report]);
   const inspectedClaim = inspect ? report.claims.find((c) => c.id === inspect.claimId) : null;
 
@@ -57,6 +59,26 @@ export function ReportPanel({ report, attestation, runId }: {
   const openInspector = (claimId: number, chunkId?: string) => {
     inspectorOpens.current += 1;
     setInspect({ claimId, chunkId });
+  };
+
+  const loadComplianceTrace = async () => {
+    if (!runId) return;
+    try {
+      const trace = await api.getComplianceTrace(runId);
+      setComplianceTrace(trace);
+    } catch (e) {
+      console.error("Failed to load compliance trace:", e);
+    }
+  };
+
+  const loadReplayResult = async () => {
+    if (!runId) return;
+    try {
+      const result = await api.replayWorkflow(runId);
+      setReplayResult(result);
+    } catch (e) {
+      console.error("Failed to load replay result:", e);
+    }
   };
 
   const hasTree = !!report.argument_tree?.root;
@@ -157,6 +179,34 @@ export function ReportPanel({ report, attestation, runId }: {
           focusChunk={inspect?.chunkId}
           onClose={() => setInspect(null)}
         />
+      )}
+
+      {runId && (
+        <div className="phase8-section">
+          <h4 className="section-h">Phase 8: Observability & Compliance</h4>
+          <div className="phase8-buttons">
+            <button className="btn btn-secondary" onClick={loadComplianceTrace}>
+              📋 View Compliance Trace
+            </button>
+            <button className="btn btn-secondary" onClick={loadReplayResult}>
+              🔄 Replay Workflow
+            </button>
+          </div>
+
+          {complianceTrace && (
+            <div className="compliance-trace">
+              <h5 className="mono">Compliance Trace ({complianceTrace.trace_length} events)</h5>
+              <pre className="trace-output">{JSON.stringify(complianceTrace.trace, null, 2)}</pre>
+            </div>
+          )}
+
+          {replayResult && (
+            <div className="replay-result">
+              <h5 className="mono">Workflow Replay Result</h5>
+              <pre className="trace-output">{JSON.stringify(replayResult, null, 2)}</pre>
+            </div>
+          )}
+        </div>
       )}
     </section>
   );

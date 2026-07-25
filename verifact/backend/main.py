@@ -24,9 +24,13 @@ import api_v1
 import journal
 import llm
 import memory
+import metrics
 import referee
 import semantic
+import sentry_integration
 import tavily_client
+import workflow
+from fastapi.responses import Response
 from pipeline import Run, run_pipeline
 
 app = FastAPI(title="VeritasAI", version="2.0.0")
@@ -43,10 +47,13 @@ def _startup():
     memory.init()
     referee.init()
     api_v1.init()
+    workflow.init()
+    sentry_integration.init()
 
 
 class ResearchRequest(BaseModel):
     topic: str
+    explain: str | None = None  # Phase 8: compliance mode (?explain=full)
 
 
 @app.post("/api/research")
@@ -55,7 +62,7 @@ async def start_research(req: ResearchRequest):
     if not topic:
         raise HTTPException(400, "topic is required")
     run_id = uuid.uuid4().hex[:12]
-    run = Run(run_id, topic)
+    run = Run(run_id, topic, explain=req.explain)
     RUNS[run_id] = run
     asyncio.create_task(_run_and_persist(run))
     return {"run_id": run_id}
@@ -237,3 +244,42 @@ async def referee_stats():
 # ---------------------------------------------------------------------------
 
 app.include_router(api_v1.router)
+
+
+# ---------------------------------------------------------------------------
+# Phase 8 — Observability & Compliance endpoints
+# ---------------------------------------------------------------------------
+
+@app.get("/metrics")
+async def prometheus_metrics():
+    """Prometheus metrics endpoint (Phase 8)."""
+    return Response(
+        content=metrics.get_metrics(),
+        media_type=metrics.get_content_type()
+    )
+
+
+@app.get("/api/reports/{run_id}/compliance")
+async def get_compliance_trace(run_id: str):
+    """Get the full compliance trace for a run (Phase 8)."""
+    run = RUNS.get(run_id)
+    if not run:
+        raise HTTPException(404, "run not found")
+    if not run.compliance_trace.enabled:
+        raise HTTPException(400, "compliance mode not enabled for this run (use ?explain=full)")
+    return run.compliance_trace.to_dict()
+
+
+@app.get("/api/workflows/{run_id}/replay")
+async def replay_workflow(run_id: str):
+    """Replay a workflow from its journal (Phase 8)."""
+    try:
+        return workflow.replay_run(run_id)
+    except ValueError as e:
+        raise HTTPException(404, str(e))
+
+
+@app.get("/api/workflows")
+async def list_workflows(limit: int = 50):
+    """List recent workflow runs (Phase 8)."""
+    return {"workflows": workflow.list_runs(limit)}

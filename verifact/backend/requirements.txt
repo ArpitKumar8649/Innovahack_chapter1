@@ -7,3 +7,6 @@ fastembed>=0.4
 chromadb>=0.5
 # Phase 7 — knowledge graph (provenance + circular-citation detection)
 networkx>=3.2
+# Phase 8 — observability & compliance
+prometheus-client>=0.20
+sentry-sdk>=2.0

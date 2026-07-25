@@ -8,11 +8,11 @@ async function get<T>(path: string): Promise<T> {
 }
 
 export const api = {
-  startResearch: async (topic: string): Promise<string> => {
+  startResearch: async (topic: string, explain?: string): Promise<string> => {
     const res = await fetch("/api/research", {
       method: "POST",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({ topic }),
+      body: JSON.stringify({ topic, explain }),
     });
     if (!res.ok) throw new Error(`could not start run (HTTP ${res.status})`);
     const d = await res.json();
@@ -36,6 +36,11 @@ export const api = {
   health: () => get<Health>("/api/health"),
   analytics: () => get<Engagement>("/api/analytics"),
   semantic: () => get<SemanticStats>("/api/semantic"),
+
+  // Phase 8: observability & compliance
+  getComplianceTrace: (runId: string) => get<any>(`/api/reports/${runId}/compliance`),
+  replayWorkflow: (runId: string) => get<any>(`/api/workflows/${runId}/replay`),
+  listWorkflows: (limit = 50) => get<any>(`/api/workflows?limit=${limit}`),
 
   recordEngagement: (payload: {
     run_id: string; topic: string; dwell_ms: number;

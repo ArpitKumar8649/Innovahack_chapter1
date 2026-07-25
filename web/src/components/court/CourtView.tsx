@@ -19,6 +19,7 @@ export function CourtView() {
   const [topic, setTopic] = useState(EXAMPLES[0]);
   const [busy, setBusy] = useState(false);
   const [history, setHistory] = useState<RunSummary[]>([]);
+  const [complianceMode, setComplianceMode] = useState(false);
 
   useEffect(() => {
     api.listRuns().then((runs) => setHistory(runs.filter((r) => !r.error))).catch(() => {});
@@ -29,7 +30,7 @@ export function CourtView() {
     if (!value || busy) return;
     setBusy(true);
     try {
-      await start(value);
+      await start(value, complianceMode ? "full" : undefined);
     } catch (e) {
       setBusy(false);
     }
@@ -65,6 +66,19 @@ export function CourtView() {
               {ex.length > 46 ? ex.slice(0, 46) + "…" : ex}
             </button>
           ))}
+        </div>
+        <div className="intake-options">
+          <label className="compliance-toggle">
+            <input
+              type="checkbox"
+              checked={complianceMode}
+              onChange={(e) => setComplianceMode(e.target.checked)}
+            />
+            <span className="mono">compliance mode</span>
+          </label>
+          <a href="/metrics" target="_blank" rel="noopener noreferrer" className="metrics-link mono">
+            📊 metrics
+          </a>
         </div>
       </section>
 

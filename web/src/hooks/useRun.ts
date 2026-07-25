@@ -241,9 +241,9 @@ export function useRun() {
   const [state, dispatch] = useReducer(reducer, initial);
   const closeRef = useRef<(() => void) | null>(null);
 
-  const start = useCallback(async (topic: string) => {
+  const start = useCallback(async (topic: string, explain?: string) => {
     closeRef.current?.();
-    const runId = await api.startResearch(topic);
+    const runId = await api.startResearch(topic, explain);
     dispatch({ type: "reset", topic, runId });
 
     closeRef.current = streamRun(runId, {

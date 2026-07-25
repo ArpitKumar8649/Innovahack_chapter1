@@ -16,13 +16,17 @@ import time
 
 import authority
 import argument
+import compliance
 import court
 import graph
 import llm
 import memory
+import metrics
 import murli
 import scoring
 import semantic
+import sentry_integration
+import workflow
 from evidence import Chunk, merkle_proof, merkle_root, publisher_of
 from models import ChunkRef, Report, Source, Verdict
 
@@ -31,7 +35,7 @@ STAGES = ["intake", "hypothesize", "research", "extract", "verify",
 
 
 class Run:
-    def __init__(self, run_id: str, topic: str):
+    def __init__(self, run_id: str, topic: str, explain: str | None = None):
         self.id = run_id
         self.topic = topic
         self.run_key = secrets.token_hex(16)   # per-run HMAC key (published w/ report)
@@ -41,6 +45,7 @@ class Run:
         self.done = False
         self.started = time.time()
         self.priors: list[dict] = []
+        self.compliance_trace = compliance.create_compliance_trace(run_id, explain)
 
     def emit(self, event: str, data: dict):
         self.history.append((event, data))
@@ -72,6 +77,11 @@ async def run_pipeline(run: Run):
         semantic_enabled = os.environ.get("VERITAS_SEMANTIC", "0") == "1"
         cached_sources = memory.get_evidence(topic) if cache_enabled else None
 
+        # Phase 8: workflow journaling + metrics + Sentry context
+        workflow.start_run(run.id, topic)
+        metrics.increment_active_runs()
+        sentry_integration.set_run_context(run.id, topic)
+
         # --- 0. INTAKE — memory priors ---------------------------------------
         run.emit("stage", {"stage": "intake", "status": "started"})
         run.priors = memory.topic_priors(topic)
@@ -80,6 +90,7 @@ async def run_pipeline(run: Run):
             run.log("intake", f"memory recall: {len(run.priors)} prior finding(s) "
                     f"related to this topic")
         run.emit("stage", {"stage": "intake", "status": "done"})
+        workflow.checkpoint(run.id, "intake", {"priors": len(run.priors)})
 
         # --- 1. HYPOTHESES (Murli) -------------------------------------------
         run.emit("stage", {"stage": "hypothesize", "status": "started"})
@@ -92,6 +103,7 @@ async def run_pipeline(run: Run):
         run.emit("hypotheses", {"hypotheses": [h.model_dump() for h in hypotheses],
                                 "queries": queries})
         run.emit("stage", {"stage": "hypothesize", "status": "done"})
+        workflow.checkpoint(run.id, "hypothesize", {"hypotheses": len(hypotheses)})
 
         # --- 2. EVIDENCE REQUISITION (Serper → Tavily extract) ---------------
         run.emit("stage", {"stage": "research", "status": "started"})
@@ -108,6 +120,7 @@ async def run_pipeline(run: Run):
                 raise RuntimeError("No evidence gathered — search APIs unreachable.")
             run.emit("sources", {"sources": [s.model_dump() for s in sources]})
         run.emit("stage", {"stage": "research", "status": "done"})
+        workflow.checkpoint(run.id, "research", {"sources": len(sources)})
 
         # --- 3. CLAIM EXTRACTION (anchored to chunks) -------------------------
         run.emit("stage", {"stage": "extract", "status": "started"})
@@ -126,6 +139,7 @@ async def run_pipeline(run: Run):
                         f"claim(s) match a claim verified in a past run")
         run.emit("claims", {"claims": [c.model_dump() for c in claims]})
         run.emit("stage", {"stage": "extract", "status": "done"})
+        workflow.checkpoint(run.id, "extract", {"claims": len(claims)})
 
         # --- 3b. CACHE CHECK — freshly-verified claims skip the panel ---------
         new_claims, cached_claims = [], []
@@ -172,8 +186,14 @@ async def run_pipeline(run: Run):
                     "reasoning": v.reasoning, "quote": v.quote,
                     "chunk_id": v.chunk_id, "span_valid": v.span_valid,
                 })
+                # Phase 8: compliance trace
+                run.compliance_trace.record_verdict(v.verifier, {
+                    "claim_id": c.id, "stance": v.stance, "reasoning": v.reasoning,
+                    "quote": v.quote, "chunk_id": v.chunk_id, "span_valid": v.span_valid
+                })
         run.emit("stage", {"stage": "verify", "status": "done",
                            "verifier_failures": failures})
+        workflow.checkpoint(run.id, "verify", {"verified": len(new_claims), "failures": failures})
 
         # --- 4b. MULTI-TURN DEBATE (deliberation + Judge) ----------------------
         run.emit("stage", {"stage": "deliberate", "status": "started"})
@@ -188,8 +208,13 @@ async def run_pipeline(run: Run):
             for c in new_claims:
                 c.verdicts = by_claim.get(c.id, [])
             run.emit("debate", {"transcript": transcript, "rounds": rounds_used})
+            # Phase 8: compliance trace for deliberation
+            for round_num in range(2, rounds_used + 1):
+                round_transcript = [t for t in transcript if t.get("round") == round_num]
+                run.compliance_trace.record_deliberation(round_num, round_transcript)
         run.emit("stage", {"stage": "deliberate", "status": "done",
                            "rounds": rounds_used})
+        workflow.checkpoint(run.id, "deliberate", {"rounds": rounds_used})
 
         # --- 5. HALLUCINATION SWEEP (typed; fresh claims only) ------------------
         run.emit("stage", {"stage": "hallucinations", "status": "started"})
@@ -201,7 +226,13 @@ async def run_pipeline(run: Run):
             c.hallucinations = hallu.get(c.id, [])
             for f in c.hallucinations:
                 run.emit("hallucination", {"claim_id": c.id, **f})
+                # Phase 8: metrics + compliance trace
+                metrics.record_hallucination_flag(f.get("type", "unknown"), f.get("severity", "unknown"))
+                run.compliance_trace.record_hallucination_check("hallucination_detector", [{
+                    "claim_id": c.id, **f
+                }])
         run.emit("stage", {"stage": "hallucinations", "status": "done"})
+        workflow.checkpoint(run.id, "hallucinations", {"flags": sum(len(v) for v in hallu.values())})
 
         # --- 6. CONTRADICTION SWEEP --------------------------------------------
         run.emit("stage", {"stage": "contradictions", "status": "started"})
@@ -211,6 +242,7 @@ async def run_pipeline(run: Run):
         for cd in contradictions:
             run.emit("contradiction", cd.model_dump())
         run.emit("stage", {"stage": "contradictions", "status": "done"})
+        workflow.checkpoint(run.id, "contradictions", {"contradictions": len(contradictions)})
 
         # --- 7. TRUST SCORING + MERKLE ANCHORING (deterministic) ---------------
         sources_by_id = {s.id: s for s in sources}
@@ -246,6 +278,7 @@ async def run_pipeline(run: Run):
             )
             run.emit("score", {"claim_id": c.id, "confidence": c.confidence,
                                "status": c.status})
+        workflow.checkpoint(run.id, "scoring", {"scored": len(claims)})
 
         # --- 7b. ARGUMENT TREE + TRUST RADAR (Phase 5) --------------------------
         argument_tree = argument.build_argument_tree(claims, hypotheses, sources_by_id)
@@ -309,12 +342,31 @@ async def run_pipeline(run: Run):
             "cached": len(cached_claims), "debate_rounds": rounds_used,
             "merkle_root": root[:16] + "…",
         })
+        workflow.checkpoint(run.id, "synthesis", {"trust_score": report.trust_score})
 
         # --- 9. LEARNING — record claims, domains, content hashes ---------------
         _learn(claims, cached_claims, sources, topic, run, semantic_enabled)
+        workflow.checkpoint(run.id, "learning", {})
+
+        # Phase 8: workflow completion + metrics
+        duration = time.time() - run.started
+        workflow.finish_run(run.id, status="completed")
+        metrics.record_run_completed("completed", duration)
+        metrics.decrement_active_runs()
+
     except Exception as e:
         run.error = str(e)
         run.emit("error", {"message": str(e)})
+        # Phase 8: workflow failure + metrics + Sentry
+        duration = time.time() - run.started
+        workflow.finish_run(run.id, status="failed", error=str(e))
+        metrics.record_run_completed("failed", duration)
+        metrics.decrement_active_runs()
+        sentry_integration.capture_error(e, {
+            "run_id": run.id,
+            "topic": run.topic,
+            "duration": duration
+        })
     finally:
         run.done = True
 

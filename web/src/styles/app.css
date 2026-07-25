@@ -606,6 +606,54 @@
 .flag-cancel { background: transparent; border-color: var(--line); color: var(--ink-2); }
 .flag-cancel:hover:not(:disabled) { border-color: var(--ink-3); color: var(--ink); }
 
+/* ================================ Phase 8: observability & compliance ================================ */
+.intake-options {
+  display: flex; align-items: center; gap: 16px; margin-top: 12px;
+  font-size: 12px;
+}
+.compliance-toggle {
+  display: flex; align-items: center; gap: 6px; cursor: pointer;
+  color: var(--ink-2); user-select: none;
+}
+.compliance-toggle input[type="checkbox"] {
+  width: 14px; height: 14px; cursor: pointer;
+}
+.compliance-toggle:hover { color: var(--ink); }
+.metrics-link {
+  color: var(--accent); text-decoration: none; transition: color var(--dur);
+}
+.metrics-link:hover { color: var(--accent-bright); text-decoration: underline; }
+
+.phase8-section {
+  margin-top: 32px; padding-top: 24px; border-top: 1px solid var(--line);
+}
+.phase8-buttons {
+  display: flex; gap: 12px; margin-bottom: 16px;
+}
+.btn-secondary {
+  background: var(--panel-2); border: 1px solid var(--line);
+  color: var(--ink); padding: 8px 16px; border-radius: var(--r-sm);
+  font-size: 13px; cursor: pointer; transition: all var(--dur);
+}
+.btn-secondary:hover {
+  background: var(--panel); border-color: var(--accent);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+.compliance-trace, .replay-result {
+  background: var(--panel-2); border: 1px solid var(--line);
+  border-radius: var(--r-md); padding: 16px; margin-top: 12px;
+}
+.compliance-trace h5, .replay-result h5 {
+  font-size: 13px; margin: 0 0 12px 0; color: var(--ink-2);
+}
+.trace-output {
+  font-family: var(--font-mono); font-size: 11px;
+  background: var(--bg-2); border: 1px solid var(--line);
+  border-radius: var(--r-sm); padding: 12px;
+  max-height: 400px; overflow-y: auto;
+  color: var(--ink); white-space: pre-wrap; word-break: break-word;
+}
+
 @media (max-width: 900px) {
   .report-radar { margin-left: 0; align-items: flex-start; }
 }
