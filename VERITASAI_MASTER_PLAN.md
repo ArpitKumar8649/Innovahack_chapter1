@@ -49,11 +49,11 @@ and — where it's an external API — **live-tested with our keys on
 | **FActScore** (Min et al.) | Atomic fact decomposition enables fine-grained verification | Already in v1 (Extractor); extend with typed claims (Phase 1) |
 | **Stanford STORM** (2024) | Multi-perspective question-asking → higher-coverage cited articles | Murli's sub-question generation borrows this (Phase 0) |
 | **LLM confidence calibration** (Amazon/MIT 2024-25) | LLMs self-report ~100% confidence even when wrong; consistency-based estimation works better | Confidence stays computed, never self-reported; add ECE calibration measurement (Phase 2) |
-| **KG-based verification** (FactKG 2023, GraphCheck 2025, ClaimVer 2024) | Knowledge graphs enable multi-hop evidence chains and provenance tracking | Neo4j provenance graph is Phase 6 — *after* the value is proven, not before |
+| **KG-based verification** (FactKG 2023, GraphCheck 2025, ClaimVer 2024) | Knowledge graphs enable multi-hop evidence chains and provenance tracking | Neo4j provenance graph is Phase 7 — *after* the value is proven, not before |
 | **Provenance-enhanced statements** (2024) | Provenance itself is an epistemic signal: who said what, when, under which conditions | Every stored fact carries a provenance record from day one (Phase 1) |
-| **Argument mining survey** (2024) | Claims/premises/relations structure; counter-argument generation by attacking weak premises | Argument trees with Toulmin structure (Phase 4) |
+| **Argument mining survey** (2024) | Claims/premises/relations structure; counter-argument generation by attacking weak premises | Argument trees with Toulmin structure (Phase 5) |
 | **MBFC methodology** (Media Bias/Fact Check) | 10-point source credibility: factual reporting > bias > traffic/longevity | Source authority tiers modeled on this (Phase 2) |
-| **Temporal — durable execution** (2025 docs) | Right tool for long-running multi-step workflows with real failure surfaces; gives retries + replay/audit for free | Adopt at Phase 7 when orchestration earns it — *not* at MVP |
+| **Temporal — durable execution** (2025 docs) | Right tool for long-running multi-step workflows with real failure surfaces; gives retries + replay/audit for free | Adopt at Phase 8 when orchestration earns it — *not* at MVP |
 | **AutoGen multi-agent debate pattern** | Multi-turn debate: agents exchange responses, refine based on others' | Debate rounds protocol (Phase 3) |
 
 ### What we adopt from the "VeritasAI" brief (friend's plan)
@@ -69,10 +69,10 @@ and — where it's an external API — **live-tested with our keys on
 | Brief's proposal | Problem | Our replacement |
 |---|---|---|
 | **Zero-Knowledge Proof of Truth** | ZKPs prove *computation integrity*, not *factual truth*. You cannot ZK-prove "source supports claim" without revealing the source — and revealing it is the whole point. It's crypto theater. | **Fact-Embedded Citations (FEC):** SHA-256 content hashes + exact-quote anchoring. Click a claim → see the *exact sentence* from the source, hash-verified, with URL + retrieval timestamp. Same trust goal, actually implementable, actually useful. |
-| **Kong + RabbitMQ + Temporal at MVP** | Three distributed-systems components before a single user. Operational debt that kills hackathon-scale projects. | Single FastAPI + asyncio now. **Temporal at Phase 7** when multi-step durability genuinely earns its complexity. Message bus only if/when services split. |
+| **Kong + RabbitMQ + Temporal at MVP** | Three distributed-systems components before a single user. Operational debt that kills hackathon-scale projects. | Single FastAPI + asyncio now. **Temporal at Phase 8** when multi-step durability genuinely earns its complexity. Message bus only if/when services split. |
 | **4 different LLM providers day one** (Cohere+GPT-4+Gemini+Claude) | 4× the integration surface, 4× the key management, 4× the cost — before knowing if persona diversity or *model* diversity is what helps. | Persona-diverse panel on one provider now (proven in v1). **Provider-agnostic LLM layer from day one** so multi-model is a config change, adopted when evidence (our own A/B harness) shows it helps. |
-| **Neo4j + ChromaDB + Postgres simultaneously** | Three databases to operate before product-market fit. | **Staged data layer:** SQLite+FTS5 (Phase 3) → ChromaDB (Phase 5) → Neo4j (Phase 6). Each added when the previous tier's limits are *measured*, not predicted. |
-| **Mobile apps at month 11-12** | Distraction from the core trust engine. | Web-first; PWA if demanded. Mobile only post-Phase 8. |
+| **Neo4j + ChromaDB + Postgres simultaneously** | Three databases to operate before product-market fit. | **Staged data layer:** SQLite+FTS5 (Phase 3) → ChromaDB (Phase 6) → Neo4j (Phase 7). Each added when the previous tier's limits are *measured*, not predicted. |
+| **Mobile apps at month 11-12** | Distraction from the core trust engine. | Web-first; PWA if demanded. Mobile only post-Phase 9. |
 
 ---
 
@@ -87,7 +87,7 @@ and — where it's an external API — **live-tested with our keys on
 ┌───────────────────────────────▼────────────────────────────────────────────┐
 │                         ORCHESTRATION LAYER                                │
 │   Phase 0-6: asyncio state machine (durable-run journal to SQLite)         │
-│   Phase 7+:  Temporal workflows (replay, retry, audit for free)            │
+│   Phase 8+:  Temporal workflows (replay, retry, audit for free)            │
 │                                                                            │
 │  ┌──────────────────────── THE COURT ────────────────────────────────┐     │
 │  │                                                                   │     │
@@ -118,15 +118,15 @@ and — where it's an external API — **live-tested with our keys on
 │  │  7. SYNTHESIS / WRITER — citation-backed report                   │     │
 │  │     with argument tree + epistemic status per claim               │     │
 │  │                                                                   │     │
-│  │  8. RED-TEAM AGENT (Phase 8) — probes reports for residual bias   │     │
-│  │  9. EXPERT REFEREE (Phase 6) — human escalation + feedback loop   │     │
+│  │  8. RED-TEAM AGENT (Phase 9) — probes reports for residual bias   │     │
+│  │  9. EXPERT REFEREE (Phase 7) — human escalation + feedback loop   │     │
 │  └───────────────────────────────────────────────────────────────────┘     │
 │                                                                            │
 │  ┌──────────────────── KNOWLEDGE LAYER (staged) ──────────────────────┐    │
 │  │  P3: SQLite + FTS5 — run journal, claim memory, source registry    │    │
-│  │  P5: ChromaDB — semantic index of evidence; counter-evidence │    │
+│  │  P6: ChromaDB — semantic index of evidence; counter-evidence │    │
 │  │      retrieval ("find passages that OPPOSE this claim")            │    │
-│  │  P6: Neo4j — provenance graph: Claim→Evidence→Source→Publisher,    │    │
+│  │  P7: Neo4j — provenance graph: Claim→Evidence→Source→Publisher,    │    │
 │  │      multi-hop chains, "source A cites source B" cycles            │    │
 │  └────────────────────────────────────────────────────────────────────┘    │
 └───────────────────────────────┬────────────────────────────────────────────┘
@@ -320,7 +320,7 @@ client-side check) passes.
 against *confidential* sources — corporate documents, medical or legal
 records — where an outsider must be convinced *without* seeing the records,
 ZKP/zkML becomes the right tool. That is a different product (enterprise
-compliance), not this transparency-first PS; noted for Phase 8+ exploration.
+compliance), not this transparency-first PS; noted for Phase 9+ exploration.
 
 ---
 
@@ -386,7 +386,7 @@ calibration error is more trustworthy than one that hides it.*
 - **Source registry:** domain → authority tier, times-seen, hash index
 - FTS5 full-text search over stored evidence → "have we seen this quote before?"
 
-### Phase 5 — ChromaDB (semantic layer)
+### Phase 6 — ChromaDB (semantic layer)
 - Embed every evidence chunk (sentence-transformers, local — no API cost)
 - **Counter-evidence retrieval:** given a claim, query
   `"evidence that contradicts: {claim}"` → surfaces opposing passages the
@@ -394,7 +394,7 @@ calibration error is more trustworthy than one that hides it.*
   hypothesis," made real.
 - Cross-run dedup: semantically-similar claims merge their evidence
 
-### Phase 6 — Neo4j (provenance graph)
+### Phase 7 — Neo4j (provenance graph)
 ```
 (:Claim)-[:SUPPORTED_BY {quote, hash}]->(:Evidence)-[:FROM]->(:Source)
 (:Source)-[:PUBLISHED_BY]->(:Publisher {authority_tier})
@@ -411,7 +411,7 @@ novel trust signal.
 ## 9. Argumentation layer — the report as an argument tree
 
 Reports stop being flat claim lists. Each report carries a **Toulmin-structured
-argument tree** (argument-mining literature, Phase 4):
+argument tree** (argument-mining literature, Phase 5):
 
 ```
                     ┌─ Evidence E1,E3 (Tier 1)
@@ -431,7 +431,7 @@ Claim ──┤
 
 ---
 
-## 10. Debate Theater UI (Phase 4)
+## 10. Debate Theater UI (Phase 5)
 
 The frontend becomes a *theater*, not a dashboard:
 
@@ -449,7 +449,7 @@ The frontend becomes a *theater*, not a dashboard:
    corrections section
 
 All streamed over SSE (v1's transport, proven). WebSocket upgrade only if
-user interaction demands it (Phase 7).
+user interaction demands it (Phase 8).
 
 ---
 
@@ -468,7 +468,7 @@ continuous self-audit**. A regression in trap catch-rate blocks the merge.
 
 ---
 
-## 12. Observability, API & enterprise (Phases 7-8)
+## 12. Observability, API & enterprise (Phases 8-9)
 
 - **Tracing:** every agent call → structured trace (agent, model, tokens,
   latency, verdict) in the run journal; Prometheus metrics endpoint
@@ -477,10 +477,10 @@ continuous self-audit**. A regression in trap catch-rate blocks the merge.
   reasoning chain in the report (regulated industries — the brief's idea, kept)
 - **White-label API:** `POST /v1/verify` with API keys, rate limits, webhooks
   on completion; usage metering per tenant
-- **Expert Referee portal** (Phase 6): domain experts flag verdicts;
+- **Expert Referee portal** (Phase 7): domain experts flag verdicts;
   flagged topics route to an expert-context agent; flags become harness
   test cases (the feedback loop that makes the system *learn from humans*)
-- **Red-Team agent** (Phase 8): continuously probes reports for residual
+- **Red-Team agent** (Phase 9): continuously probes reports for residual
   bias and hallucination; its findings seed new trap-suite cases
 
 ---
@@ -537,7 +537,23 @@ dissent; attestation intact on cached runs (Merkle + 9/9 signatures);
 content-hash index flags recurring quotes (circular-citation seed);
 model auto-fallback to qwen3.6-plus on quota exhaustion.
 
-### Phase 4 — Debate Theater & Argument Trees · *Month 7-9*
+### Phase 4 — Debate Theater · React Frontend · *Month 7-9*
+**Goal:** the court becomes a place you can watch — a crafted, living frontend.
+- React + TypeScript + Vite app (replaces the vanilla-JS prototype)
+- **Landing page:** long, detailed, distinctive — opens on the court in
+  session (not a generic hero), sections for the agents, the FEC receipt
+  stack, live measured numbers, and the debate itself
+- **The Court (chat space):** each agent (Murli, Researcher, Extractor,
+  Verifiers A/B/C, Judge, Writer) speaks in a live transcript as the run
+  streams over SSE — verdicts, rebuttals, concessions, dissents as dialogue
+- **Terminal:** a live log console mirroring the backend's stage/agent logs
+- **Evidence Inspector + Trust gauge + claim verdicts** rebuilt in React,
+  with client-side Merkle proof (Web Crypto) preserved
+- **Exit:** the full run experience (intake → verdict) works end-to-end in
+  React; landing page, chat space, and terminal all render live data;
+  attestation badge passes against the real API.
+
+### Phase 5 — Debate Theater & Argument Trees · *Month 9-11*
 **Goal:** the trust gap closes visually.
 - Argument tree extraction + Toulmin structure + weakest-link indicator
 - Interactive tree visualization (D3) + Trust Radar + Evidence Inspector UI
@@ -545,7 +561,7 @@ model auto-fallback to qwen3.6-plus on quota exhaustion.
 - **Exit:** argument tree renders for 100% of multi-hypothesis reports;
   mean report dwell time >60s (the brief's KPI).
 
-### Phase 5 — Semantic Layer · *Month 9-11*
+### Phase 6 — Semantic Layer · *Month 11-13*
 **Goal:** find the evidence keywords can't.
 - ChromaDB evidence index (local embeddings)
 - Counter-evidence retrieval in Murli's loop
@@ -553,7 +569,7 @@ model auto-fallback to qwen3.6-plus on quota exhaustion.
 - **Exit:** on a 20-claim adversarial set, semantic retrieval surfaces
   opposing evidence that keyword search missed in ≥50% of cases.
 
-### Phase 6 — Knowledge Graph & Expert Referee · *Month 11-13*
+### Phase 7 — Knowledge Graph & Expert Referee · *Month 13-15*
 **Goal:** provenance at graph scale; humans in the loop.
 - Neo4j provenance graph (Section 8) + circular-citation detector
 - Multi-hop verification ("blog citing blog" downgrade)
@@ -562,7 +578,7 @@ model auto-fallback to qwen3.6-plus on quota exhaustion.
 - **Exit:** circular citations detected on a seeded test set; ≥1 expert
   flag converted to a harness case; API serves external callers.
 
-### Phase 7 — Durable Scale & Compliance · *Month 13-15*
+### Phase 8 — Durable Scale & Compliance · *Month 15-17*
 **Goal:** production-grade orchestration.
 - Temporal migration for run workflows (retry/replay/audit) — *now* justified
   by multi-round debates + graph lookups + human-escalation waits
@@ -571,7 +587,7 @@ model auto-fallback to qwen3.6-plus on quota exhaustion.
 - **Exit:** 100 concurrent runs p95< 90s; workflow replay reproduces a
   run's verdicts exactly; compliance report passes a mock audit.
 
-### Phase 8 — Enterprise & Adversarial Maturity · *Month 15-18+*
+### Phase 9 — Enterprise & Adversarial Maturity · *Month 17-18+*
 **Goal:** platform, not tool.
 - Red-Team agent (continuous bias/hallucination probing)
 - White-label multi-tenant SaaS + usage metering
@@ -587,15 +603,15 @@ model auto-fallback to qwen3.6-plus on quota exhaustion.
 | Layer | Choice | Why (and when it changes) |
 |---|---|---|
 | API | FastAPI + asyncio | proven in v1; SSE native; async concurrency |
-| Orchestration | asyncio state machine → **Temporal (P7)** | durability earns its complexity only at multi-round + human-wait scale |
+| Orchestration | asyncio state machine → **Temporal (P8)** | durability earns its complexity only at multi-round + human-wait scale |
 | LLM | Qwen/DashScope behind provider-agnostic layer | one working key today; multi-model is a config change, A/B-proven at P2 |
 | Search | **Serper.dev** (search/scholar/news) | structured SERP JSON, PAA for sub-questions, scholar for authority; tested ✅ |
 | Extraction | **Tavily /extract** | 20 URLs/call, clean raw_content; tested ✅ |
-| Storage | SQLite+FTS5 (P3) → ChromaDB (P5) → Neo4j (P6) | each tier added when measured limits demand it |
-| Frontend | Vanilla JS + D3 (P4) | zero build risk; D3 only for the argument tree |
+| Storage | SQLite+FTS5 (P3) → ChromaDB (P6) → Neo4j (P7) | each tier added when measured limits demand it |
+| Frontend | **React + TypeScript + Vite (P4)** → D3 argument tree (P5) | prototype was vanilla JS; P4 rebuilds as a crafted SPA (landing + court chat + terminal) |
 | Eval | FEVER/SciFact + custom trap suite in GitHub Actions | continuous self-audit (Fact-Audit pattern) |
-| Observability | structured logs → Prometheus/Grafana/Sentry (P7) | right-sized per phase |
-| Deploy | Docker + Render (now) → k8s (P7, if scale demands) | boring until it needs not to be |
+| Observability | structured logs → Prometheus/Grafana/Sentry (P8) | right-sized per phase |
+| Deploy | Docker + Render (now) → k8s (P8, if scale demands) | boring until it needs not to be |
 
 ---
 

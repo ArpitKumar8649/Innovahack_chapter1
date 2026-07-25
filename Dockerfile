@@ -1,5 +1,12 @@
-# VeritasAI — production image: nginx edge + API in one container.
-# nginx serves the frontend on :8080 and proxies /api/* to uvicorn on :8000.
+# ---- Stage 1: build the React + TypeScript frontend ----
+FROM node:24-alpine AS web
+WORKDIR /web
+COPY web/package*.json ./
+RUN npm install --silent
+COPY web/ ./
+RUN npm run build
+
+# ---- Stage 2: runtime (nginx edge + API) ----
 FROM python:3.12-slim
 
 RUN apt-get update \
@@ -12,7 +19,8 @@ COPY verifact/backend/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 COPY verifact/ ./verifact/
-COPY verifact/frontend/ /usr/share/nginx/html/
+# nginx serves the built React app and proxies /api to the backend
+COPY --from=web /web/dist /usr/share/nginx/html/
 COPY deploy/nginx.conf /etc/nginx/nginx.conf
 COPY deploy/entrypoint.sh /app/entrypoint.sh
 RUN chmod +x /app/entrypoint.sh

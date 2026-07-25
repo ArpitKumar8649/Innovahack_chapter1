@@ -1,16 +1,21 @@
 #!/usr/bin/env python3
-"""Development server for the VeritasAI frontend.
+"""Static + API-edge server for the VeritasAI React frontend.
 
-Serves the static frontend on :3000 and proxies /api/* to the backend on
-:8000 — mirroring the production nginx edge (deploy/nginx.conf) exactly,
-including SSE streaming. The app is used from a single URL in development:
-http://localhost:3000
+Serves the built React app (web/dist) on :3000 and proxies /api/* to the
+backend on :8000 — mirroring the production nginx edge (deploy/nginx.conf),
+including SSE streaming and SPA client-side routing (unknown paths fall back
+to index.html). The app is used from a single URL: http://localhost:3000
 """
 import http.server
+import os
 import urllib.request
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
+REPO_ROOT = HERE.parent.parent
+DIST = REPO_ROOT / "web" / "dist"
+# fall back to the legacy vanilla frontend if the React build is absent
+SERVE_DIR = DIST if DIST.exists() else HERE
 API_BASE = "http://localhost:8000"
 PORT = 3000
 HOP_BY_HOP = {"transfer-encoding", "content-length", "connection", "keep-alive"}
@@ -18,13 +23,18 @@ HOP_BY_HOP = {"transfer-encoding", "content-length", "connection", "keep-alive"}
 
 class Handler(http.server.SimpleHTTPRequestHandler):
     def __init__(self, *args, **kwargs):
-        super().__init__(*args, directory=str(HERE), **kwargs)
+        super().__init__(*args, directory=str(SERVE_DIR), **kwargs)
 
     def do_GET(self):
         if self.path.startswith("/api/"):
             self._proxy("GET")
-        else:
-            super().do_GET()
+            return
+        # SPA fallback: client routes (e.g. /court) have no file on disk —
+        # serve index.html and let React Router handle them.
+        path = self.path.split("?")[0].lstrip("/")
+        if path and not (SERVE_DIR / path).exists():
+            self.path = "/index.html"
+        super().do_GET()
 
     def do_POST(self):
         if self.path.startswith("/api/"):
@@ -66,9 +76,11 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             resp.close()
 
     def log_message(self, fmt, *args):
-        pass  # keep the dev console quiet
+        pass  # keep the console quiet
 
 
 if __name__ == "__main__":
+    if not DIST.exists():
+        print("⚠ web/dist not found — serving legacy frontend. Run: (cd web && npm run build)")
     print(f"VeritasAI frontend → http://localhost:{PORT}  (API proxied to {API_BASE})")
     http.server.ThreadingHTTPServer(("0.0.0.0", PORT), Handler).serve_forever()

@@ -6,6 +6,10 @@ __pycache__/
 *.log
 .env
 
+# web (React) build artifacts
+web/node_modules/
+web/dist/
+
 # OS / editor
 .DS_Store
 *.swp
