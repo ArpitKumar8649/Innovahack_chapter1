@@ -70,6 +70,8 @@ class Claim(BaseModel):
     verdicts: list[Verdict] = Field(default_factory=list)
     hallucinations: list[dict] = Field(default_factory=list)
     verification_note: str = ""
+    counter_evidence: list[dict] = Field(default_factory=list)  # Phase 6: opposing passages keyword search missed
+    semantic_prior: dict | None = None                          # Phase 6: best semantically-identical claim from a past run
 
 
 class Contradiction(BaseModel):
@@ -111,6 +113,8 @@ class Report(BaseModel):
     # Phase 5 — argumentation
     argument_tree: dict = Field(default_factory=dict)      # Toulmin tree + weakest link
     trust_radar: dict = Field(default_factory=dict)        # 5-axis confidence profile
+    # Phase 6 — semantic layer
+    semantic_stats: dict = Field(default_factory=dict)     # counter-evidence + dedup summary
     # FEC anchors
     merkle_root: str = ""
     run_key: str = ""                # per-run HMAC key (public, for signature checks)

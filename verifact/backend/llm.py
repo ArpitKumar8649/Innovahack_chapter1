@@ -22,7 +22,7 @@ CHAT_URL = os.environ.get(
     "LLM_CHAT_URL",
     "https://dashscope-intl.aliyuncs.com/compatible-mode/v1/chat/completions",
 )
-MODEL = os.environ.get("LLM_MODEL", "qwen3.7-max-2026-06-08")
+MODEL = os.environ.get("LLM_MODEL", "qwen3.5-plus")
 FALLBACK_MODEL = os.environ.get("LLM_FALLBACK_MODEL", "qwen3.6-plus")
 API_KEY = os.environ.get(
     "DASHSCOPE_API_KEY",

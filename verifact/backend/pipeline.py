@@ -21,6 +21,7 @@ import llm
 import memory
 import murli
 import scoring
+import semantic
 from evidence import Chunk, merkle_proof, merkle_root, publisher_of
 from models import ChunkRef, Report, Source, Verdict
 
@@ -67,6 +68,7 @@ async def run_pipeline(run: Run):
     try:
         topic = run.topic
         cache_enabled = os.environ.get("VERITAS_NO_CACHE") != "1"
+        semantic_enabled = os.environ.get("VERITAS_SEMANTIC", "0") == "1"
         cached_sources = memory.get_evidence(topic) if cache_enabled else None
 
         # --- 0. INTAKE — memory priors ---------------------------------------
@@ -110,6 +112,17 @@ async def run_pipeline(run: Run):
         run.emit("stage", {"stage": "extract", "status": "started"})
         claims = await court.extract_claims(
             sources, hypotheses, topic, log=lambda m: run.log("extract", m))
+        # Phase 6 — semantic dedup: link each claim to its nearest past-run twin
+        if semantic_enabled and semantic.available():
+            dedup_hits = 0
+            for c in claims:
+                similar = semantic.find_similar_claims(c.text, n=1)
+                if similar:
+                    c.semantic_prior = similar[0]
+                    dedup_hits += 1
+            if dedup_hits:
+                run.log("extract", f"semantic dedup: {dedup_hits}/{len(claims)} "
+                        f"claim(s) match a claim verified in a past run")
         run.emit("claims", {"claims": [c.model_dump() for c in claims]})
         run.emit("stage", {"stage": "extract", "status": "done"})
 
@@ -241,6 +254,25 @@ async def run_pipeline(run: Run):
             wl = argument_tree["weakest_link"]
             run.log("report", f"weakest link: {wl['note']}")
 
+        # --- 7c. SEMANTIC LAYER (Phase 6) — counter-evidence the search missed --
+        # Optional: the embedding model needs ~300MB; on constrained boxes the
+        # live API may not have room mid-run. Enable with VERITAS_SEMANTIC=1.
+        semantic_stats = {"counter_hits": 0, "claims_checked": 0}
+        if semantic_enabled and semantic.available():
+            run.emit("stage", {"stage": "semantic", "status": "started"})
+            hits = 0
+            for c in claims:
+                counter = semantic.counter_evidence(c.text)
+                if counter:
+                    c.counter_evidence = counter
+                    hits += 1
+                    run.emit("counter_evidence", {"claim_id": c.id, "counter": counter})
+            semantic_stats = {"counter_hits": hits, "claims_checked": len(claims)}
+            if hits:
+                run.log("report", f"semantic layer surfaced opposing evidence for "
+                        f"{hits}/{len(claims)} claim(s) that keyword search missed")
+            run.emit("stage", {"stage": "semantic", "status": "done"})
+
         # --- 8. SYNTHESIS -------------------------------------------------------
         run.emit("stage", {"stage": "report", "status": "started"})
         summary = await _synthesize(topic, claims, contradictions, sources, run)
@@ -254,6 +286,7 @@ async def run_pipeline(run: Run):
             memory_stats={"cached": len(cached_claims), "new": len(new_claims),
                           "rounds": rounds_used, "priors": len(run.priors)},
             argument_tree=argument_tree, trust_radar=trust_radar,
+            semantic_stats=semantic_stats,
             merkle_root=root, run_key=run.run_key, verified=False,
         )
         run.report = report
@@ -269,7 +302,7 @@ async def run_pipeline(run: Run):
         })
 
         # --- 9. LEARNING — record claims, domains, content hashes ---------------
-        _learn(claims, cached_claims, sources, topic, run)
+        _learn(claims, cached_claims, sources, topic, run, semantic_enabled)
     except Exception as e:
         run.error = str(e)
         run.emit("error", {"message": str(e)})
@@ -295,7 +328,7 @@ def _rehydrate_sources(dicts: list) -> list:
     return out
 
 
-def _learn(claims, cached_claims, sources, topic, run):
+def _learn(claims, cached_claims, sources, topic, run, semantic_enabled=False):
     try:
         cached_ids = {c.id for c in cached_claims}
         for c in claims:
@@ -314,6 +347,25 @@ def _learn(claims, cached_claims, sources, topic, run):
                 if ch.hash:
                     memory.record_hash(ch.hash, ch.id, s.url)
         run.log("report", f"memory updated: {memory.stats()}")
+
+        # semantic index (Phase 6) — grow the evidence + claim corpora
+        if semantic_enabled and semantic.available():
+            chunks = []
+            for s in sources:
+                for ch in s.__dict__.get("_chunks", []):
+                    if ch.text:
+                        chunks.append({
+                            "id": ch.id, "text": ch.text, "run_id": run.id,
+                            "source_id": s.id, "url": s.url,
+                            "publisher": s.publisher,
+                            "authority_tier": s.authority_tier,
+                        })
+            n = semantic.index_evidence(chunks)
+            for c in claims:
+                semantic.record_claim(c.id, c.text, run.id, c.status)
+            run.log("report", f"semantic index: +{n} chunks, "
+                    f"{semantic.stats()}")
+            semantic.unload()   # free ~300MB so the API baseline stays small
     except Exception as e:
         run.log("report", f"memory write degraded: {e}")
 

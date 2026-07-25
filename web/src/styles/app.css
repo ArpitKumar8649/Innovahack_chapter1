@@ -360,6 +360,35 @@
   background: var(--amber-soft); border: 1px solid rgba(245,185,66,0.3); color: var(--ink-2);
 }
 .hallu-flag.hallu-high { background: var(--red-soft); border-color: rgba(255,107,107,0.35); }
+
+/* Phase 6 — semantic layer */
+.semantic-prior {
+  margin-top: 10px; font-size: 12px; color: var(--accent);
+  background: var(--accent-soft); border: 1px solid rgba(90,162,255,0.3);
+  border-radius: var(--r-sm); padding: 7px 11px;
+}
+.counter-evidence {
+  margin-top: 10px; border: 1px solid rgba(255,107,107,0.3); border-radius: var(--r-md);
+  background: var(--red-soft); overflow: hidden;
+}
+.counter-head {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  padding: 7px 11px; border-bottom: 1px solid rgba(255,107,107,0.2);
+}
+.counter-flag { font-size: 12px; font-weight: 600; color: var(--red); }
+.counter-note { font-size: 10px; color: var(--ink-3); }
+.counter-item {
+  display: flex; align-items: baseline; gap: 9px; padding: 8px 11px;
+  border-bottom: 1px solid rgba(255,107,107,0.12); font-size: 12.5px;
+}
+.counter-item:last-child { border-bottom: none; }
+.counter-item .tier { flex-shrink: 0; }
+.counter-text { flex: 1; color: var(--ink-2); line-height: 1.4; }
+.counter-meta { display: inline-flex; align-items: center; gap: 6px; flex-shrink: 0; font-size: 10px; color: var(--ink-3); }
+.counter-meta em { font-style: normal; color: var(--ink-3); }
+.counter-meta b { color: var(--red); font-weight: 700; }
+.counter-meta a { color: var(--accent); text-decoration: none; }
+
 .claim-foot { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-top: 12px; }
 .claim-verdicts { display: flex; gap: 7px; flex-wrap: wrap; }
 .vb {

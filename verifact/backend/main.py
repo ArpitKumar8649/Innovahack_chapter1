@@ -23,6 +23,7 @@ from pydantic import BaseModel
 import journal
 import llm
 import memory
+import semantic
 import tavily_client
 from pipeline import Run, run_pipeline
 
@@ -163,6 +164,13 @@ async def analytics():
     return journal.engagement_stats()
 
 
+@app.get("/api/semantic")
+async def semantic_stats():
+    """Semantic layer state (Phase 6): indexed evidence chunks + claims,
+    the model in use, and availability."""
+    return semantic.stats()
+
+
 @app.get("/api/health")
 async def health():
     return {
@@ -171,4 +179,5 @@ async def health():
         "llm_model": llm.current_model(),
         "llm_fallback": llm.FALLBACK_MODEL,
         "tavily_configured": bool(tavily_client.TAVILY_API_KEY),
+        "semantic_available": semantic.available(),
     }

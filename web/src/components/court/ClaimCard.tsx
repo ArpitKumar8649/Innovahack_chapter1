@@ -41,6 +41,32 @@ export function ClaimCard({ claim, sources, onInspect }: {
         </div>
       ))}
 
+      {claim.semantic_prior && (
+        <div className="semantic-prior" title="semantically identical to a claim verified in a past run">
+          ⟲ verified before — {Math.round(claim.semantic_prior.similarity * 100)}% match to a past-run claim
+        </div>
+      )}
+
+      {claim.counter_evidence.length > 0 && (
+        <div className="counter-evidence">
+          <div className="counter-head">
+            <span className="counter-flag">⟂ counter-evidence the search missed</span>
+            <span className="counter-note mono">semantic retrieval · {claim.counter_evidence.length} opposing passage(s)</span>
+          </div>
+          {claim.counter_evidence.map((ce) => (
+            <div key={ce.chunk_id} className="counter-item">
+              <span className={`tier tier-${ce.authority_tier}`}>T{ce.authority_tier}</span>
+              <span className="counter-text">{ce.text}</span>
+              <span className="counter-meta mono">
+                {ce.publisher && <em>{ce.publisher}</em>}
+                <b>+{ce.score.toFixed(2)}</b>
+                {ce.url && <a href={ce.url} target="_blank" rel="noopener noreferrer">↗</a>}
+              </span>
+            </div>
+          ))}
+        </div>
+      )}
+
       <div className="claim-foot">
         <div className="claim-verdicts">
           {claim.verdicts.map((v, i) => (

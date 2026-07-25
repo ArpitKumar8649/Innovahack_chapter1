@@ -1,13 +1,14 @@
 import { useEffect, useState } from "react";
 import { Reveal } from "../ui/Reveal";
 import { api } from "../../lib/api";
-import type { Calibration, Engagement, Health, MemoryStats } from "../../types";
+import type { Calibration, Engagement, Health, MemoryStats, SemanticStats } from "../../types";
 
 interface Live {
   memory?: MemoryStats;
   calibration?: Calibration;
   health?: Health;
   engagement?: Engagement;
+  semantic?: SemanticStats;
 }
 
 /** Real numbers pulled from the live API — not marketing. */
@@ -16,21 +17,24 @@ export function LiveNumbers() {
 
   useEffect(() => {
     Promise.allSettled([
-      api.memory(), api.calibration(), api.health(), api.analytics(),
-    ]).then(([m, c, h, e]) => {
+      api.memory(), api.calibration(), api.health(), api.analytics(), api.semantic(),
+    ]).then(([m, c, h, e, s]) => {
       setLive({
         memory: m.status === "fulfilled" ? m.value : undefined,
         calibration: c.status === "fulfilled" ? c.value : undefined,
         health: h.status === "fulfilled" ? h.value : undefined,
         engagement: e.status === "fulfilled" ? e.value : undefined,
+        semantic: s.status === "fulfilled" ? s.value : undefined,
       });
     });
   }, []);
 
   const eng = live.engagement;
+  const sem = live.semantic;
   const stats = [
     { label: "claims learned", value: live.memory?.claims ?? "—", note: "across all runs" },
     { label: "domains classified", value: live.memory?.domains ?? "—", note: "authority registry" },
+    { label: "evidence embedded", value: sem?.available ? sem.evidence_chunks : "—", note: "semantic index (Phase 6)" },
     { label: "recurring quotes", value: live.memory?.recurring_quotes ?? "—", note: "circular-citation seed" },
     { label: "calibration (ECE)", value: live.calibration?.n ? live.calibration.ece : "—", note: `${live.calibration?.n ?? 0} labeled claims` },
     {

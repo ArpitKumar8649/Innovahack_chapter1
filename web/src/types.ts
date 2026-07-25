@@ -56,6 +56,26 @@ export interface Claim {
   verdicts: Verdict[];
   hallucinations: Hallucination[];
   verification_note: string;
+  counter_evidence: CounterEvidence[];   // Phase 6: opposing passages keyword search missed
+  semantic_prior?: SemanticPrior | null; // Phase 6: nearest past-run twin claim
+}
+
+export interface CounterEvidence {
+  chunk_id: string;
+  text: string;
+  score: number;              // contrastive score: +ve = net-opposing
+  source_id: number | null;
+  url: string;
+  publisher: string;
+  authority_tier: number;
+  sim_to_claim: number;
+}
+
+export interface SemanticPrior {
+  claim_id: number;
+  run_id: string;
+  text: string;
+  similarity: number;         // cosine similarity to the past-run claim
 }
 
 export interface Hallucination {
@@ -91,6 +111,7 @@ export interface Report {
   memory_stats: { cached: number; new: number; rounds: number; priors: number };
   argument_tree: ArgumentTree;
   trust_radar: TrustRadar;
+  semantic_stats: SemanticStats;   // Phase 6
   merkle_root: string;
   run_key: string;
   verified: boolean;
@@ -163,11 +184,19 @@ export interface MemoryStats {
   claims: number; domains: number; chunks_indexed: number; recurring_quotes: number;
 }
 
+export interface SemanticStats {
+  available: boolean;
+  evidence_chunks: number;
+  claims: number;
+  model: string | null;
+}
+
 export interface Calibration { n: number; ece: number; }
 
 export interface Health {
   status: string; version: string; llm_model: string;
   llm_fallback?: string; tavily_configured: boolean;
+  semantic_available?: boolean;
 }
 
 export interface RunSummary {
@@ -178,7 +207,7 @@ export interface RunSummary {
 
 export type StageName =
   | "intake" | "hypothesize" | "research" | "extract" | "verify"
-  | "deliberate" | "hallucinations" | "contradictions" | "report";
+  | "deliberate" | "hallucinations" | "contradictions" | "semantic" | "report";
 
 export interface StageEvent { stage: StageName; status: "started" | "done"; rounds?: number; verifier_failures?: number; }
 export interface LogEvent { stage: string; message: string; }
@@ -190,6 +219,7 @@ export interface CacheEvent { cached: { claim_id: number; text: string; confiden
 export interface VerdictEvent { claim_id: number; verifier: string; stance: Stance; reasoning: string; quote: string; chunk_id: string; span_valid: boolean; }
 export interface DebateEvent { transcript: TranscriptEntry[]; rounds: number; }
 export interface ArgumentEvent { tree: ArgumentTree; radar: TrustRadar; }
+export interface CounterEvidenceEvent { claim_id: number; counter: CounterEvidence[]; }
 export interface HallucinationEvent extends Hallucination { claim_id: number; }
 export interface ScoreEvent { claim_id: number; confidence: number; status: Status; }
 export interface DoneEvent { run_id: string; elapsed_s: number; claims: number; sources: number; contradictions: number; cached: number; debate_rounds: number; merkle_root: string; }
@@ -206,6 +236,7 @@ export type SseEventMap = {
   verdict: VerdictEvent;
   debate: DebateEvent;
   argument: ArgumentEvent;
+  counter_evidence: CounterEvidenceEvent;
   hallucination: HallucinationEvent;
   contradiction: Contradiction;
   score: ScoreEvent;
