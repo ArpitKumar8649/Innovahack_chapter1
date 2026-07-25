@@ -115,6 +115,8 @@ class Report(BaseModel):
     trust_radar: dict = Field(default_factory=dict)        # 5-axis confidence profile
     # Phase 6 — semantic layer
     semantic_stats: dict = Field(default_factory=dict)     # counter-evidence + dedup summary
+    # Phase 7 — knowledge graph
+    graph_stats: dict = Field(default_factory=dict)        # provenance graph + circular citations
     # FEC anchors
     merkle_root: str = ""
     run_key: str = ""                # per-run HMAC key (public, for signature checks)

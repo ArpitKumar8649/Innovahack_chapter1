@@ -6,10 +6,12 @@ import { TrustRadarChart } from "./TrustRadar";
 import { ArgumentTreeView } from "./ArgumentTree";
 import { ClaimCard } from "./ClaimCard";
 import { EvidenceInspector } from "./EvidenceInspector";
+import { ProvenanceGraph } from "./ProvenanceGraph";
 
-export function ReportPanel({ report, attestation }: {
+export function ReportPanel({ report, attestation, runId }: {
   report: Report;
   attestation: Attestation | null;
+  runId?: string;
 }) {
   const [inspect, setInspect] = useState<{ claimId: number; chunkId?: string } | null>(null);
   const sources = useMemo(() => new Map(report.sources.map((s) => [s.id, s])), [report]);
@@ -106,6 +108,13 @@ export function ReportPanel({ report, attestation }: {
         </div>
       )}
 
+      {report.graph_stats && (
+        <div className="provenance-section">
+          <h4 className="section-h">Provenance graph <span className="muted">(knowledge graph)</span></h4>
+          <ProvenanceGraph stats={report.graph_stats} />
+        </div>
+      )}
+
       {report.contradictions.length > 0 && (
         <div className="contras">
           <h4 className="section-h contra-h">⚠ Contradictions & corrections</h4>
@@ -121,7 +130,7 @@ export function ReportPanel({ report, attestation }: {
       <h4 className="section-h">Claims & verdicts <span className="muted">({report.claims.length})</span></h4>
       <div className="claims">
         {report.claims.map((c) => (
-          <ClaimCard key={c.id} claim={c} sources={sources} onInspect={openInspector} />
+          <ClaimCard key={c.id} claim={c} sources={sources} onInspect={openInspector} runId={runId} />
         ))}
       </div>
 

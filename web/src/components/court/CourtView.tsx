@@ -79,7 +79,7 @@ export function CourtView() {
       {state.error && <div className="error-banner">⚠ {state.error}</div>}
 
       {state.report && (
-        <ReportPanel report={state.report} attestation={state.attestation} />
+        <ReportPanel report={state.report} attestation={state.attestation} runId={state.runId ?? undefined} />
       )}
 
       {history.length > 0 && (

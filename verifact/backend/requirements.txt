@@ -5,3 +5,5 @@ pydantic>=2.7
 # Phase 6 — semantic layer (local embeddings + vector store)
 fastembed>=0.4
 chromadb>=0.5
+# Phase 7 — knowledge graph (provenance + circular-citation detection)
+networkx>=3.2

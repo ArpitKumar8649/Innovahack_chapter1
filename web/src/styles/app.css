@@ -543,6 +543,69 @@
 .tree-unattr-chip { display: inline-flex; align-items: center; gap: 6px; font-size: 11px; color: var(--ink-2); background: var(--bg-2); border: 1px solid var(--line-soft); border-radius: 99px; padding: 3px 10px; }
 .tree-unattr-chip .status-pill { font-size: 8px; padding: 1px 6px; }
 
+/* ================================ Phase 7: provenance graph ================================ */
+.provenance-section { margin: 24px 0; }
+.provenance-graph {
+  background: var(--panel); border: 1px solid var(--line); border-radius: var(--r-lg);
+  padding: 18px; display: flex; flex-direction: column; gap: 14px;
+}
+.provenance-header { display: flex; align-items: center; justify-content: space-between; }
+.provenance-header h4 { margin: 0; font-size: 16px; }
+.circular-badge {
+  font-family: var(--font-mono); font-size: 11px; font-weight: 700;
+  color: var(--amber); background: var(--amber-soft);
+  border: 1px solid var(--amber); border-radius: 99px; padding: 4px 12px;
+}
+.provenance-stats {
+  display: flex; align-items: center; justify-content: center; gap: 16px;
+  padding: 20px; background: var(--bg-2); border-radius: var(--r-md);
+}
+.stat-item { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.stat-value { font-size: 28px; font-weight: 700; color: var(--accent); }
+.stat-label { font-size: 12px; color: var(--ink-3); text-transform: uppercase; letter-spacing: 0.08em; }
+.stat-arrow { font-size: 24px; color: var(--ink-3); }
+.provenance-meta { font-size: 12px; color: var(--ink-3); text-align: center; }
+.circular-cycles {
+  background: var(--amber-soft); border: 1px solid var(--amber);
+  border-radius: var(--r-md); padding: 14px; margin-top: 8px;
+}
+.cycles-header { font-size: 13px; font-weight: 600; color: var(--amber); margin-bottom: 8px; }
+.cycle-chain { font-size: 12px; color: var(--ink-2); padding: 6px 0; border-bottom: 1px dashed var(--line-soft); }
+.cycle-chain:last-child { border-bottom: none; }
+
+/* ================================ Phase 7: expert flag button ================================ */
+.claim-actions { display: flex; align-items: center; gap: 12px; }
+.flag-button {
+  font-size: 12px; color: var(--amber); background: var(--amber-soft);
+  border: 1px solid var(--amber); border-radius: var(--r-sm);
+  padding: 4px 10px; cursor: pointer; transition: all var(--dur);
+}
+.flag-button:hover { background: var(--amber); color: var(--bg); }
+.flag-submitted { font-size: 12px; color: var(--green); font-weight: 600; }
+.flag-form {
+  display: flex; flex-direction: column; gap: 8px;
+  background: var(--panel-2); border: 1px solid var(--line);
+  border-radius: var(--r-md); padding: 12px; margin-top: 8px;
+}
+.flag-input, .flag-textarea {
+  font-family: var(--font-mono); font-size: 12px;
+  background: var(--bg-2); border: 1px solid var(--line);
+  border-radius: var(--r-sm); padding: 8px 10px; color: var(--ink);
+}
+.flag-input:focus, .flag-textarea:focus { outline: none; border-color: var(--accent); }
+.flag-textarea { resize: vertical; min-height: 60px; }
+.flag-actions { display: flex; gap: 8px; }
+.flag-submit, .flag-cancel {
+  font-size: 12px; font-weight: 600; border-radius: var(--r-sm);
+  padding: 6px 14px; cursor: pointer; border: 1px solid transparent;
+  transition: all var(--dur);
+}
+.flag-submit { background: var(--amber); color: var(--bg); }
+.flag-submit:hover:not(:disabled) { background: var(--amber-bright); }
+.flag-submit:disabled { opacity: 0.5; cursor: not-allowed; }
+.flag-cancel { background: transparent; border-color: var(--line); color: var(--ink-2); }
+.flag-cancel:hover:not(:disabled) { border-color: var(--ink-3); color: var(--ink); }
+
 @media (max-width: 900px) {
   .report-radar { margin-left: 0; align-items: flex-start; }
 }

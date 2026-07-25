@@ -20,9 +20,11 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 
+import api_v1
 import journal
 import llm
 import memory
+import referee
 import semantic
 import tavily_client
 from pipeline import Run, run_pipeline
@@ -39,6 +41,8 @@ RUNS: dict[str, Run] = {}
 def _startup():
     journal.init()
     memory.init()
+    referee.init()
+    api_v1.init()
 
 
 class ResearchRequest(BaseModel):
@@ -181,3 +185,55 @@ async def health():
         "tavily_configured": bool(tavily_client.TAVILY_API_KEY),
         "semantic_available": semantic.available(),
     }
+
+
+# ---------------------------------------------------------------------------
+# Phase 7 — Expert Referee endpoints
+# ---------------------------------------------------------------------------
+
+class FlagRequest(BaseModel):
+    run_id: str
+    claim_id: int
+    expert_name: str
+    reason: str
+
+
+@app.post("/api/flag")
+async def flag_verdict(req: FlagRequest):
+    """An expert flags a verdict for review."""
+    try:
+        flag_id = referee.flag_verdict(
+            req.run_id, req.claim_id, req.expert_name, req.reason
+        )
+        return {"ok": True, "flag_id": flag_id}
+    except Exception as e:
+        raise HTTPException(400, str(e))
+
+
+@app.get("/api/flags")
+async def list_flags(run_id: str = None, limit: int = 50):
+    """List expert flags, optionally filtered by run_id."""
+    return {"flags": referee.get_flags(run_id, limit)}
+
+
+@app.post("/api/flags/{flag_id}/convert")
+async def convert_flag(flag_id: int):
+    """Convert a flag into a harness test case."""
+    try:
+        test_case = referee.convert_to_test_case(flag_id)
+        return {"ok": True, "test_case": test_case}
+    except Exception as e:
+        raise HTTPException(400, str(e))
+
+
+@app.get("/api/referee/stats")
+async def referee_stats():
+    """Expert referee system stats."""
+    return referee.stats()
+
+
+# ---------------------------------------------------------------------------
+# Phase 7 — Public API v1 (external access with API key auth)
+# ---------------------------------------------------------------------------
+
+app.include_router(api_v1.router)

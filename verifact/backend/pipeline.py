@@ -17,6 +17,7 @@ import time
 import authority
 import argument
 import court
+import graph
 import llm
 import memory
 import murli
@@ -273,6 +274,14 @@ async def run_pipeline(run: Run):
                         f"{hits}/{len(claims)} claim(s) that keyword search missed")
             run.emit("stage", {"stage": "semantic", "status": "done"})
 
+        # --- 7d. PROVENANCE GRAPH (Phase 7) — circular-citation detection ------
+        G = graph.build_provenance_graph(claims, sources_by_id)
+        graph_stats = graph.graph_stats(G)
+        run.emit("graph", {"stats": graph_stats})
+        if graph_stats["circular_citations"] > 0:
+            run.log("report", f"⚠ circular citation detected: "
+                    f"{graph_stats['circular_citations']} cycle(s) in the provenance graph")
+
         # --- 8. SYNTHESIS -------------------------------------------------------
         run.emit("stage", {"stage": "report", "status": "started"})
         summary = await _synthesize(topic, claims, contradictions, sources, run)
@@ -286,7 +295,7 @@ async def run_pipeline(run: Run):
             memory_stats={"cached": len(cached_claims), "new": len(new_claims),
                           "rounds": rounds_used, "priors": len(run.priors)},
             argument_tree=argument_tree, trust_radar=trust_radar,
-            semantic_stats=semantic_stats,
+            semantic_stats=semantic_stats, graph_stats=graph_stats,
             merkle_root=root, run_key=run.run_key, verified=False,
         )
         run.report = report

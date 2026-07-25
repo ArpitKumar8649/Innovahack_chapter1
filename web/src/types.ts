@@ -78,6 +78,15 @@ export interface SemanticPrior {
   similarity: number;         // cosine similarity to the past-run claim
 }
 
+export interface GraphStats {
+  claims: number;
+  sources: number;
+  publishers: number;
+  edges: number;
+  circular_citations: number;
+  cycles: string[][];         // first 5 cycles for display
+}
+
 export interface Hallucination {
   type: string; severity: string; evidence: string; correction?: string;
 }
@@ -112,6 +121,7 @@ export interface Report {
   argument_tree: ArgumentTree;
   trust_radar: TrustRadar;
   semantic_stats: SemanticStats;   // Phase 6
+  graph_stats: GraphStats;         // Phase 7
   merkle_root: string;
   run_key: string;
   verified: boolean;

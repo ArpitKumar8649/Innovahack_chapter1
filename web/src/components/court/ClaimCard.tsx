@@ -1,14 +1,16 @@
 import type { Claim, Source } from "../../types";
 import { StanceChip } from "../ui/StanceChip";
+import { ExpertFlagButton } from "./ExpertFlagButton";
 
 const ACTION_GLYPH: Record<string, string> = {
   concede: "↩", rebut: "⚔", hold: "≡", judge: "⚖", cache: "◈",
 };
 
-export function ClaimCard({ claim, sources, onInspect }: {
+export function ClaimCard({ claim, sources, onInspect, runId }: {
   claim: Claim;
   sources: Map<number, Source>;
   onInspect: (claimId: number, chunkId?: string) => void;
+  runId?: string;
 }) {
   const fromMemory = claim.verdicts.some((v) => v.verifier === "M");
 
@@ -80,12 +82,15 @@ export function ClaimCard({ claim, sources, onInspect }: {
             </span>
           ))}
         </div>
-        <div className="claim-evidence">
-          {claim.chunk_ids.map((cid) => (
-            <button key={cid} className="ev-chip mono" onClick={() => onInspect(claim.id, cid)}>
-              ▣ {cid}
-            </button>
-          ))}
+        <div className="claim-actions">
+          {runId && <ExpertFlagButton runId={runId} claim={claim} />}
+          <div className="claim-evidence">
+            {claim.chunk_ids.map((cid) => (
+              <button key={cid} className="ev-chip mono" onClick={() => onInspect(claim.id, cid)}>
+                ▣ {cid}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
