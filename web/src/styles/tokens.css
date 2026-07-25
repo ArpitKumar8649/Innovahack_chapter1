@@ -33,6 +33,13 @@
   --accent-2: #9a7bff;
   --accent-2-soft: rgba(154, 123, 255, 0.13);
 
+  /* rose — landing page theme */
+  --rose: #f43f5e;
+  --rose-light: #fb7185;
+  --rose-dark: #be123c;
+  --rose-soft: rgba(244, 63, 94, 0.13);
+  --rose-glow: rgba(244, 63, 94, 0.20);
+
   /* type */
   --font-display: "Fraunces", Georgia, "Times New Roman", serif;
   --font-body: "Space Grotesk", "Segoe UI", system-ui, sans-serif;
