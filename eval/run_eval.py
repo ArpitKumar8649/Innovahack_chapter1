@@ -213,17 +213,22 @@ def main():
     ap.add_argument("--max-false-alarm", type=float, default=None)
     ap.add_argument("--max-ece", type=float, default=None)
     ap.add_argument("--max-error-rate", type=float, default=0.10)
+    ap.add_argument("--from-results", type=Path, default=None,
+                    help="re-score gates from an existing results.json (no runs)")
     args = ap.parse_args()
 
-    claims = load_claims(args.claims, only_fast=not args.all)
-    print(f"Evaluating {len(claims)} claims (concurrency={args.concurrency})…\n")
-    rows = asyncio.run(run_suite(claims, args.concurrency))
-    summary = summarize(rows)
+    if args.from_results:
+        data = json.loads(args.from_results.read_text())
+        rows, summary = data["results"], data["summary"]
+    else:
+        claims = load_claims(args.claims, only_fast=not args.all)
+        print(f"Evaluating {len(claims)} claims (concurrency={args.concurrency})…\n")
+        rows = asyncio.run(run_suite(claims, args.concurrency))
+        summary = summarize(rows)
+        args.out.write_text(json.dumps(
+            {"summary": summary, "results": rows}, indent=2))
+        print(f"\nResults written to {args.out}")
     print_report(summary, rows)
-
-    args.out.write_text(json.dumps(
-        {"summary": summary, "results": rows}, indent=2))
-    print(f"\nResults written to {args.out}")
 
     # CI gates
     failures = []
@@ -231,9 +236,11 @@ def main():
         failures.append(f"error rate {summary['error_rate']:.0%} > {args.max_error_rate:.0%} (infra unstable — results not trustworthy)")
     if args.min_accuracy is not None and summary["accuracy"] < args.min_accuracy:
         failures.append(f"accuracy {summary['accuracy']:.1%} < {args.min_accuracy:.0%}")
-    if args.min_catch is not None and (summary["trap_catch_rate"] or 0) < args.min_catch:
+    if args.min_catch is not None and summary["trap_catch_rate"] is not None \
+            and summary["trap_catch_rate"] < args.min_catch:
         failures.append(f"trap catch-rate {summary['trap_catch_rate']:.1%} < {args.min_catch:.0%}")
-    if args.max_false_alarm is not None and (summary["false_alarm_rate"] or 1) > args.max_false_alarm:
+    if args.max_false_alarm is not None and summary["false_alarm_rate"] is not None \
+            and summary["false_alarm_rate"] > args.max_false_alarm:
         failures.append(f"false-alarm rate {summary['false_alarm_rate']:.1%} > {args.max_false_alarm:.0%}")
     if args.max_ece is not None and summary["ece"] > args.max_ece:
         failures.append(f"ECE {summary['ece']:.3f} > {args.max_ece}")
