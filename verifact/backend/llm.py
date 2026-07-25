@@ -88,22 +88,29 @@ async def chat(
     max_tokens: int = 8000,
     expect_json: bool = False,
     log=None,
+    model: str | None = None,
 ) -> str:
-    """One logical chat call, with retry/backoff and endpoint fallback."""
+    """One logical chat call, with retry/backoff and endpoint fallback.
+
+    `model` overrides MODEL for this call — the multi-model A/B scaffolding:
+    the verifier panel can run model-diverse (one model per verifier) or
+    persona-diverse (same model, different lenses) purely by config.
+    """
     global _use_chat
+    model = model or MODEL
     last_err = None
     for attempt in range(8):
         try:
             async with _semaphore():
                 if _use_chat:
                     resp = await _post(CHAT_URL, {
-                        "model": MODEL, "max_tokens": max_tokens,
+                        "model": model, "max_tokens": max_tokens,
                         "temperature": temperature, "messages": messages,
                         "enable_thinking": False,
                     })
                 else:
                     resp = await _post(RESPONSES_URL, {
-                        "model": MODEL, "max_tokens": max_tokens,
+                        "model": model, "max_tokens": max_tokens,
                         "temperature": temperature, "input": messages,
                         "enable_thinking": False,
                     })
@@ -156,7 +163,8 @@ def _retry_after(body: str, attempt: int) -> float:
 
 
 async def chat_json(
-    system: str, user: str, temperature: float = 0.2, max_tokens: int = 8000, log=None
+    system: str, user: str, temperature: float = 0.2, max_tokens: int = 8000,
+    log=None, model: str | None = None,
 ):
     """Chat expecting a JSON object back; returns the parsed object."""
     text = await chat(
@@ -167,5 +175,6 @@ async def chat_json(
         max_tokens=max_tokens,
         expect_json=True,
         log=log,
+        model=model,
     )
     return extract_json(text)

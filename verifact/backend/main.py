@@ -122,6 +122,13 @@ async def list_runs():
     return {"runs": journal.list_runs()}
 
 
+@app.get("/api/calibration")
+async def calibration():
+    """Expected Calibration Error over labeled eval runs — the system
+    publishing its own calibration error (Phase 2)."""
+    return journal.calibration()
+
+
 @app.get("/api/health")
 async def health():
     return {

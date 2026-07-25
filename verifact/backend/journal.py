@@ -31,6 +31,9 @@ def init():
                 error       TEXT,
                 report      TEXT
             )""")
+        cols = [r[1] for r in con.execute("PRAGMA table_info(runs)")]
+        if "gold" not in cols:
+            con.execute("ALTER TABLE runs ADD COLUMN gold TEXT")
 
 
 def save_run(run):
@@ -41,13 +44,14 @@ def save_run(run):
         con.execute(
             """INSERT OR REPLACE INTO runs
                (run_id, topic, started, finished, trust_score, merkle_root,
-                run_key, error, report)
-               VALUES (?,?,?,?,?,?,?,?,?)""",
+                run_key, error, report, gold)
+               VALUES (?,?,?,?,?,?,?,?,?,?)""",
             (run.id, run.topic, run.started, _now(),
              run.report.trust_score if run.report else None,
              run.report.merkle_root if run.report else "",
              run.run_key, run.error,
-             json.dumps(payload) if payload else None),
+             json.dumps(payload) if payload else None,
+             getattr(run, "gold", None)),
         )
 
 
@@ -128,3 +132,60 @@ def verify_report(report: dict) -> dict:
 def _now() -> float:
     import time
     return time.time()
+
+
+# ---------------------------------------------------------------------------
+# calibration (Phase 2: a system that shows its own calibration error)
+# ---------------------------------------------------------------------------
+
+STATUS_TO_LABEL = {
+    "ESTABLISHED": "SUPPORTS", "SUPPORTED": "SUPPORTS",
+    "REFUTED": "REFUTES", "OUTDATED": "REFUTES",
+    "CONTESTED": "NOTENOUGHINFO", "UNVERIFIABLE": "NOTENOUGHINFO",
+}
+
+
+def _topic_claim(report: dict) -> dict | None:
+    """The claim that states the topic itself (best word overlap)."""
+    import re
+    topic = re.sub(r"[^a-z0-9 ]", "", (report.get("topic") or "").lower()).split()
+    if not topic:
+        return None
+    topic_set, best, best_score = set(topic), None, 0
+    for c in report.get("claims", []):
+        words = set(re.sub(r"[^a-z0-9 ]", "", c.get("text", "").lower()).split())
+        score = len(topic_set & words)
+        if score > best_score:
+            best, best_score = c, score
+    return best if best_score >= max(3, len(topic_set) // 2) else None
+
+
+def calibration(bins: int = 10) -> dict:
+    """ECE over eval runs (runs with a gold label) — when we say 80%
+    confidence, is the claim right ~80% of the time?"""
+    pairs = []  # (confidence 0-1, correct bool)
+    with _lock, sqlite3.connect(DB_PATH) as con:
+        rows = con.execute(
+            "SELECT report, gold FROM runs WHERE gold IS NOT NULL AND report IS NOT NULL"
+        ).fetchall()
+    for report_json, gold in rows:
+        report = json.loads(report_json)
+        claim = _topic_claim(report)
+        if claim is None:
+            continue
+        label = STATUS_TO_LABEL.get(claim.get("status", ""), "NOTENOUGHINFO")
+        pairs.append((claim.get("confidence", 0) / 100, label == gold))
+
+    ece, bin_data = 0.0, []
+    for b in range(bins):
+        lo, hi = b / bins, (b + 1) / bins
+        in_bin = [(c, ok) for c, ok in pairs
+                  if lo <= c < hi or (b == bins - 1 and c == hi)]
+        if not in_bin:
+            continue
+        acc = sum(ok for _, ok in in_bin) / len(in_bin)
+        conf = sum(c for c, _ in in_bin) / len(in_bin)
+        ece += (len(in_bin) / len(pairs)) * abs(acc - conf)
+        bin_data.append({"lo": round(lo, 1), "n": len(in_bin),
+                         "accuracy": round(acc, 3), "mean_conf": round(conf, 3)})
+    return {"ece": round(ece, 3), "n": len(pairs), "bins": bin_data}

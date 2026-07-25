@@ -472,4 +472,16 @@
   }
 
   loadHistory();
+
+  // calibration footer — the system shows its own calibration error
+  (async () => {
+    try {
+      const r = await fetch("/api/calibration");
+      const d = await r.json();
+      if (d.n > 0) {
+        $("calibrationNote").textContent =
+          ` · calibration (ECE): ${d.ece} over ${d.n} labeled claims`;
+      }
+    } catch {}
+  })();
 })();

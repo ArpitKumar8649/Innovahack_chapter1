@@ -10,6 +10,7 @@
 import asyncio
 import hashlib
 import hmac
+import os
 import re
 
 import llm
@@ -151,12 +152,13 @@ VERIFIERS = [
 ]
 
 
-async def _one_verifier(persona, bias, claims, corpus, chunks, run_key, log=None):
+async def _one_verifier(persona, bias, claims, corpus, chunks, run_key, log=None,
+                        model=None):
     claims_block = "\n".join(f"[C{c.id}] {c.text}" for c in claims)
     data = await llm.chat_json(
         _verifier_system(persona, bias),
         f"CLAIMS:\n{claims_block}\n\nEVIDENCE CORPUS:\n{corpus}",
-        temperature=0.1, max_tokens=4500, log=log,
+        temperature=0.1, max_tokens=4500, log=log, model=model,
     )
     tag = persona.split(" ")[0]
     valid_ids = {c.id for c in claims}
@@ -188,12 +190,21 @@ async def _one_verifier(persona, bias, claims, corpus, chunks, run_key, log=None
 
 
 async def verifier_panel(claims, sources, run_key, log=None):
-    """3 adversarial verifiers in parallel. Returns ({claim_id: [Verdict]}, failures)."""
+    """3 adversarial verifiers in parallel. Returns ({claim_id: [Verdict]}, failures).
+
+    Multi-model A/B scaffolding (Phase 2): set VERIFIER_MODELS to a
+    comma-separated list (e.g. "modelA,modelB,modelC") and each verifier
+    runs on its own model — model diversity. Unset = persona diversity
+    on one model. The harness records which config ran so results compare.
+    """
     corpus = corpus_block(sources)
     chunks = chunk_index(sources)
+    models = [m.strip() or None
+              for m in os.environ.get("VERIFIER_MODELS", "").split(",")]
     results = await asyncio.gather(
-        *(_one_verifier(p, b, claims, corpus, chunks, run_key, log)
-          for p, b in VERIFIERS),
+        *(_one_verifier(p, b, claims, corpus, chunks, run_key, log,
+                        model=models[i] if i < len(models) else None)
+          for i, (p, b) in enumerate(VERIFIERS)),
         return_exceptions=True,
     )
     by_claim = {c.id: [] for c in claims}

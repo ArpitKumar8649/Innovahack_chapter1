@@ -109,6 +109,7 @@ def expected_calibration_error(rows: list[dict], bins: int = 10) -> float:
 
 async def evaluate_one(entry: dict) -> dict:
     run = Run(f"eval-{entry['id']}", entry["claim"])
+    run.gold = entry["gold"]  # journaled → /api/calibration computes live ECE
     t0 = time.time()
     await run_pipeline(run)
     elapsed = round(time.time() - t0, 1)
