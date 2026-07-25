@@ -20,6 +20,7 @@ class Source(BaseModel):
     authority_tier: int = 4          # 1 (primary) … 5 (social)
     authority_label: str = "unknown"
     retrieved_at: str = ""
+    published_at: str = ""           # best-effort publication date (ISO)
     origin: str = "web"              # web | scholar | news
     snippet: str = ""
     content_hash: str = ""           # SHA-256 of the full extracted content

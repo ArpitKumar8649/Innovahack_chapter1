@@ -30,6 +30,18 @@ API_KEY = os.environ.get(
 
 _use_chat = False  # flips True if the Responses endpoint 404s once
 
+# Global concurrency cap across all agent calls — DashScope's dev tier
+# returns 403 under bursty concurrent load (measured in the eval harness).
+_MAX_CONCURRENT = int(os.environ.get("LLM_MAX_CONCURRENT", "4"))
+_sem: asyncio.Semaphore | None = None
+
+
+def _semaphore() -> asyncio.Semaphore:
+    global _sem
+    if _sem is None:
+        _sem = asyncio.Semaphore(_MAX_CONCURRENT)
+    return _sem
+
 
 def extract_json(text: str):
     """Pull the first JSON object/array out of a model response."""
@@ -82,28 +94,30 @@ async def chat(
     last_err = None
     for attempt in range(8):
         try:
-            if _use_chat:
-                resp = await _post(CHAT_URL, {
-                    "model": MODEL, "max_tokens": max_tokens,
-                    "temperature": temperature, "messages": messages,
-                    "enable_thinking": False,
-                })
-            else:
-                resp = await _post(RESPONSES_URL, {
-                    "model": MODEL, "max_tokens": max_tokens,
-                    "temperature": temperature, "input": messages,
-                    "enable_thinking": False,
-                })
+            async with _semaphore():
+                if _use_chat:
+                    resp = await _post(CHAT_URL, {
+                        "model": MODEL, "max_tokens": max_tokens,
+                        "temperature": temperature, "messages": messages,
+                        "enable_thinking": False,
+                    })
+                else:
+                    resp = await _post(RESPONSES_URL, {
+                        "model": MODEL, "max_tokens": max_tokens,
+                        "temperature": temperature, "input": messages,
+                        "enable_thinking": False,
+                    })
 
             if resp.status_code == 404 and not _use_chat:
                 _use_chat = True  # Responses endpoint unavailable → chat fallback
                 if log:
                     log("responses endpoint unavailable, using chat endpoint")
                 continue
-            if resp.status_code == 429:
+            if resp.status_code in (429, 403):
+                # 429 = rate limit; 403 = DashScope's concurrency/quota cap
                 wait = _retry_after(resp.text, attempt)
                 if log:
-                    log(f"rate-limited, waiting {wait}s")
+                    log(f"rate-limited ({resp.status_code}), waiting {wait}s")
                 await asyncio.sleep(wait)
                 continue
             if resp.status_code >= 500:

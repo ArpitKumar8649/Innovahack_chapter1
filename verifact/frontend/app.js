@@ -157,7 +157,7 @@
       return `<a class="source-card" href="${esc(s.url)}" target="_blank" rel="noopener">
         <span class="src-id">[${s.id}]</span>
         <span class="src-title">${esc(s.title)}</span>
-        <span class="src-meta"><span class="tier tier-${s.authority_tier}">T${s.authority_tier}</span> ${esc(host)}</span>
+        <span class="src-meta"><span class="tier tier-${s.authority_tier}">T${s.authority_tier}</span> ${esc(host)}${s.published_at ? ` · ${esc(s.published_at.slice(0, 10))}` : ""}</span>
       </a>`;
     }).join("");
 

@@ -1,0 +1,44 @@
+name: eval
+
+# Continuous self-audit (Fact-Audit pattern): every merge runs the evaluation
+# harness on the fast trap/true/ambiguous subset and blocks regressions.
+on:
+  push:
+    branches: [main]
+    paths: ["verifact/**", "eval/**"]
+  pull_request:
+    paths: ["verifact/**", "eval/**"]
+  workflow_dispatch:
+
+jobs:
+  eval:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: pip install -r verifact/backend/requirements.txt
+
+      - name: Run evaluation harness (fast subset)
+        env:
+          DASHSCOPE_API_KEY: ${{ secrets.DASHSCOPE_API_KEY }}
+          TAVILY_API_KEY: ${{ secrets.TAVILY_API_KEY }}
+          SERPER_API_KEY: ${{ secrets.SERPER_API_KEY }}
+        run: |
+          python eval/run_eval.py \
+            --min-accuracy 0.75 \
+            --min-catch 0.90 \
+            --max-false-alarm 0.10 \
+            --max-error-rate 0.10
+
+      - name: Upload results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: eval-results
+          path: eval/results.json

@@ -16,6 +16,7 @@ at the source.
 import asyncio
 import datetime
 
+import authority
 import llm
 import serper_client
 import tavily_client
@@ -125,11 +126,11 @@ async def requisition_evidence(
     candidates: dict[str, dict] = {}   # url -> candidate
     paa: list[str] = []
 
-    def add(url, title, snippet, origin, scholar_flag=False):
+    def add(url, title, snippet, origin, scholar_flag=False, date=""):
         if not url or url in candidates:
             return
         candidates[url] = {"title": title, "url": url, "snippet": snippet,
-                           "origin": origin, "scholar": scholar_flag}
+                           "origin": origin, "scholar": scholar_flag, "date": date}
 
     for wr in list(web_results) + list(counter_results):
         for r in wr.get("organic", []):
@@ -138,7 +139,7 @@ async def requisition_evidence(
     for r in scholar_hits:
         add(r["url"], r["title"], r.get("snippet", ""), "scholar", scholar_flag=True)
     for r in news_hits:
-        add(r["url"], r["title"], r.get("snippet", ""), "news")
+        add(r["url"], r["title"], r.get("snippet", ""), "news", date=r.get("date", ""))
 
     if log:
         log(f"{len(candidates)} candidate URLs "
@@ -165,6 +166,10 @@ async def requisition_evidence(
         content = extracted.get(c["url"], "")
         chunks = chunk_text(content, i) if content else []
         tier = 1 if c["scholar"] else authority_tier(c["url"])
+        pub = c.get("date", "")
+        if not pub and chunks:
+            pub = authority.parse_date(chunks[0].text) or ""
+        tier = authority.recency_tier_modifier(tier, pub)
         sources.append(Source(
             id=i,
             title=(c["title"] or c["url"])[:200],
@@ -173,6 +178,7 @@ async def requisition_evidence(
             authority_tier=tier,
             authority_label=TIER_LABEL[tier],
             retrieved_at=now,
+            published_at=pub,
             origin=c["origin"],
             snippet=c["snippet"][:800],
             content_hash=sha256_hex(content) if content else "",
@@ -181,6 +187,20 @@ async def requisition_evidence(
         ))
         # stash chunk texts on the object for downstream agents (not serialized)
         sources[-1].__dict__["_chunks"] = chunks
+
+    # --- 5b. LLM fallback classification for unknown domains -----------------
+    unknown = [s for s in sources if s.authority_tier == 4]
+    if unknown:
+        classified = await asyncio.gather(
+            *(authority.classify_domain(s.publisher) for s in unknown),
+            return_exceptions=True)
+        for s, res in zip(unknown, classified):
+            if isinstance(res, Exception):
+                continue
+            s.authority_tier, _reason = res
+            s.authority_label = TIER_LABEL[s.authority_tier]
+        if log:
+            log(f"authority: LLM-classified {len(unknown)} unknown domain(s)")
 
     # keep only sources with extractable content (fallback: keep top snippet-only)
     with_content = [s for s in sources if s.content_hash]

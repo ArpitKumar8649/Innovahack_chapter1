@@ -1,0 +1,141 @@
+{
+  "summary": {
+    "n": 9,
+    "valid": 4,
+    "errors": 5,
+    "accuracy": 0.75,
+    "trap_catch_rate": 0.75,
+    "false_alarm_rate": null,
+    "ece": 0.2875,
+    "mean_latency_s": 77.2,
+    "by_category": {
+      "trap": {
+        "n": 4,
+        "correct": 3,
+        "accuracy": 0.75
+      }
+    },
+    "confusion": {
+      "SUPPORTS": {
+        "SUPPORTS": 0,
+        "REFUTES": 0,
+        "NOTENOUGHINFO": 0
+      },
+      "REFUTES": {
+        "SUPPORTS": 0,
+        "REFUTES": 3,
+        "NOTENOUGHINFO": 1
+      },
+      "NOTENOUGHINFO": {
+        "SUPPORTS": 0,
+        "REFUTES": 0,
+        "NOTENOUGHINFO": 0
+      }
+    }
+  },
+  "results": [
+    {
+      "id": "einstein_nobel",
+      "claim": "Albert Einstein won the Nobel Prize for his theory of relativity",
+      "gold": "REFUTES",
+      "category": "trap",
+      "predicted": "REFUTES",
+      "confidence": 73,
+      "correct": true,
+      "trust_score": 73,
+      "error": null,
+      "elapsed_s": 82.3
+    },
+    {
+      "id": "great_wall_space",
+      "claim": "The Great Wall of China is visible from space with the naked eye",
+      "gold": "REFUTES",
+      "category": "trap",
+      "predicted": "REFUTES",
+      "confidence": 69,
+      "correct": true,
+      "trust_score": 66,
+      "error": null,
+      "elapsed_s": 109.8
+    },
+    {
+      "id": "ten_percent_brain",
+      "claim": "Humans only use 10 percent of their brains",
+      "gold": "REFUTES",
+      "category": "trap",
+      "predicted": "NOTENOUGHINFO",
+      "confidence": 69,
+      "correct": false,
+      "trust_score": 43,
+      "error": null,
+      "elapsed_s": 85.7
+    },
+    {
+      "id": "goldfish_memory",
+      "claim": "Goldfish have a memory span of only three seconds",
+      "gold": "REFUTES",
+      "category": "trap",
+      "predicted": "REFUTES",
+      "confidence": 50,
+      "correct": true,
+      "trust_score": 68,
+      "error": null,
+      "elapsed_s": 75.4
+    },
+    {
+      "id": "viking_horns",
+      "claim": "Vikings wore horned helmets",
+      "gold": "REFUTES",
+      "category": "trap",
+      "predicted": null,
+      "confidence": null,
+      "correct": false,
+      "error": "LLM request failed after 8 attempts: Client error '403 Forbidden' for url 'https://dashscope-intl.aliyuncs.com/api/v2/apps/protocols/compatible-mode/v1/responses'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/403",
+      "elapsed_s": 109.2
+    },
+    {
+      "id": "eiffel_1889",
+      "claim": "The Eiffel Tower was completed in 1889",
+      "gold": "SUPPORTS",
+      "category": "true",
+      "predicted": null,
+      "confidence": null,
+      "correct": false,
+      "error": "LLM request failed after 8 attempts: Client error '403 Forbidden' for url 'https://dashscope-intl.aliyuncs.com/api/v2/apps/protocols/compatible-mode/v1/responses'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/403",
+      "elapsed_s": 91.9
+    },
+    {
+      "id": "water_boil",
+      "claim": "Pure water boils at 100 degrees Celsius at sea level",
+      "gold": "SUPPORTS",
+      "category": "true",
+      "predicted": null,
+      "confidence": null,
+      "correct": false,
+      "error": "LLM request failed after 8 attempts: Client error '403 Forbidden' for url 'https://dashscope-intl.aliyuncs.com/api/v2/apps/protocols/compatible-mode/v1/responses'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/403",
+      "elapsed_s": 47.1
+    },
+    {
+      "id": "antibiotics_viruses",
+      "claim": "Antibiotics are ineffective against viral infections",
+      "gold": "SUPPORTS",
+      "category": "true",
+      "predicted": null,
+      "confidence": null,
+      "correct": false,
+      "error": "LLM request failed after 8 attempts: Client error '403 Forbidden' for url 'https://dashscope-intl.aliyuncs.com/api/v2/apps/protocols/compatible-mode/v1/responses'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/403",
+      "elapsed_s": 47.0
+    },
+    {
+      "id": "consciousness_hard",
+      "claim": "Consciousness arises entirely from physical processes in the brain",
+      "gold": "NOTENOUGHINFO",
+      "category": "ambiguous",
+      "predicted": null,
+      "confidence": null,
+      "correct": false,
+      "error": "LLM request failed after 8 attempts: Client error '403 Forbidden' for url 'https://dashscope-intl.aliyuncs.com/api/v2/apps/protocols/compatible-mode/v1/responses'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/403",
+      "elapsed_s": 46.8
+    }
+  ]
+}

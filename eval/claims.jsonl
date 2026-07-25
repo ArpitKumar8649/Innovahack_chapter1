@@ -1,0 +1,50 @@
+{"id": "einstein_nobel", "claim": "Albert Einstein won the Nobel Prize for his theory of relativity", "gold": "REFUTES", "category": "trap", "fast": true}
+{"id": "great_wall_space", "claim": "The Great Wall of China is visible from space with the naked eye", "gold": "REFUTES", "category": "trap", "fast": true}
+{"id": "ten_percent_brain", "claim": "Humans only use 10 percent of their brains", "gold": "REFUTES", "category": "trap", "fast": true}
+{"id": "napoleon_short", "claim": "Napoleon Bonaparte was unusually short", "gold": "REFUTES", "category": "trap"}
+{"id": "goldfish_memory", "claim": "Goldfish have a memory span of only three seconds", "gold": "REFUTES", "category": "trap", "fast": true}
+{"id": "bats_blind", "claim": "Bats are blind", "gold": "REFUTES", "category": "trap"}
+{"id": "lightning_twice", "claim": "Lightning never strikes the same place twice", "gold": "REFUTES", "category": "trap"}
+{"id": "spiders_sleep", "claim": "People swallow an average of eight spiders per year while sleeping", "gold": "REFUTES", "category": "trap"}
+{"id": "tongue_map", "claim": "Different regions of the human tongue taste only specific flavors", "gold": "REFUTES", "category": "trap"}
+{"id": "shaving_thicker", "claim": "Shaving makes hair grow back thicker and darker", "gold": "REFUTES", "category": "trap"}
+{"id": "knuckles_arthritis", "claim": "Cracking your knuckles causes arthritis", "gold": "REFUTES", "category": "trap"}
+{"id": "sugar_hyperactive", "claim": "Eating sugar causes hyperactivity in children", "gold": "REFUTES", "category": "trap"}
+{"id": "viking_horns", "claim": "Vikings wore horned helmets", "gold": "REFUTES", "category": "trap", "fast": true}
+{"id": "columbus_round", "claim": "Christopher Columbus proved the Earth was round", "gold": "REFUTES", "category": "trap"}
+{"id": "einstein_math", "claim": "Albert Einstein failed mathematics in school", "gold": "REFUTES", "category": "trap"}
+{"id": "sahara_largest", "claim": "The Sahara is the largest desert on Earth", "gold": "REFUTES", "category": "trap"}
+{"id": "everest_tallest", "claim": "Mount Everest is the tallest mountain measured from base to summit", "gold": "REFUTES", "category": "trap"}
+{"id": "chameleon_camouflage", "claim": "Chameleons change color primarily to camouflage themselves", "gold": "REFUTES", "category": "trap"}
+{"id": "bulls_red", "claim": "Bulls are angered by the color red", "gold": "REFUTES", "category": "trap"}
+{"id": "ostrich_sand", "claim": "Ostriches bury their heads in the sand when threatened", "gold": "REFUTES", "category": "trap"}
+{"id": "eiffel_1889", "claim": "The Eiffel Tower was completed in 1889", "gold": "SUPPORTS", "category": "true", "fast": true}
+{"id": "water_boil", "claim": "Pure water boils at 100 degrees Celsius at sea level", "gold": "SUPPORTS", "category": "true", "fast": true}
+{"id": "bones_206", "claim": "The adult human skeleton has 206 bones", "gold": "SUPPORTS", "category": "true"}
+{"id": "light_speed", "claim": "Light travels at approximately 300000 kilometers per second in a vacuum", "gold": "SUPPORTS", "category": "true"}
+{"id": "dna_1953", "claim": "The double helix structure of DNA was described by Watson and Crick in 1953", "gold": "SUPPORTS", "category": "true"}
+{"id": "photosynthesis", "claim": "Photosynthesis converts carbon dioxide and water into glucose and oxygen", "gold": "SUPPORTS", "category": "true"}
+{"id": "earth_orbit", "claim": "The Earth orbits the Sun once approximately every 365 days", "gold": "SUPPORTS", "category": "true"}
+{"id": "penicillin_fleming", "claim": "Penicillin was discovered by Alexander Fleming", "gold": "SUPPORTS", "category": "true"}
+{"id": "pacific_largest", "claim": "The Pacific Ocean is the largest ocean on Earth", "gold": "SUPPORTS", "category": "true"}
+{"id": "chromosomes_46", "claim": "Humans have 46 chromosomes in each somatic cell", "gold": "SUPPORTS", "category": "true"}
+{"id": "moon_tides", "claim": "The Moon's gravity is the primary cause of ocean tides", "gold": "SUPPORTS", "category": "true"}
+{"id": "antibiotics_viruses", "claim": "Antibiotics are ineffective against viral infections", "gold": "SUPPORTS", "category": "true", "fast": true}
+{"id": "amazon_rainforest", "claim": "The Amazon is the largest tropical rainforest on Earth", "gold": "SUPPORTS", "category": "true"}
+{"id": "sound_vacuum", "claim": "Sound cannot travel through a vacuum", "gold": "SUPPORTS", "category": "true"}
+{"id": "barrier_reef", "claim": "The Great Barrier Reef is the largest coral reef system in the world", "gold": "SUPPORTS", "category": "true"}
+{"id": "iron_magnetic", "claim": "Iron is a ferromagnetic metal", "gold": "SUPPORTS", "category": "true"}
+{"id": "earth_core", "claim": "The Earth's core is composed primarily of iron and nickel", "gold": "SUPPORTS", "category": "true"}
+{"id": "vaccines_immune", "claim": "Vaccines work by training the immune system to recognize pathogens", "gold": "SUPPORTS", "category": "true"}
+{"id": "mariana_deepest", "claim": "The Mariana Trench is the deepest known point in the Earth's oceans", "gold": "SUPPORTS", "category": "true"}
+{"id": "speed_sound_light", "claim": "The speed of sound is slower than the speed of light", "gold": "SUPPORTS", "category": "true"}
+{"id": "alien_life", "claim": "Intelligent extraterrestrial life exists elsewhere in the universe", "gold": "NOTENOUGHINFO", "category": "ambiguous"}
+{"id": "consciousness_hard", "claim": "Consciousness arises entirely from physical processes in the brain", "gold": "NOTENOUGHINFO", "category": "ambiguous", "fast": true}
+{"id": "milky_way_stars", "claim": "The Milky Way contains exactly 100 billion stars", "gold": "NOTENOUGHINFO", "category": "ambiguous"}
+{"id": "best_diet", "claim": "A ketogenic diet is the single healthiest diet for all humans", "gold": "NOTENOUGHINFO", "category": "ambiguous"}
+{"id": "universe_finite", "claim": "The observable universe is finite in size", "gold": "NOTENOUGHINFO", "category": "ambiguous"}
+{"id": "ai_conscious_2030", "claim": "Artificial general intelligence will become conscious before 2030", "gold": "NOTENOUGHINFO", "category": "ambiguous"}
+{"id": "dark_matter_nature", "claim": "Dark matter is composed primarily of undiscovered subatomic particles", "gold": "NOTENOUGHINFO", "category": "ambiguous"}
+{"id": "free_will", "claim": "Human beings possess libertarian free will", "gold": "NOTENOUGHINFO", "category": "ambiguous"}
+{"id": "multiverse_real", "claim": "Other universes exist alongside our own in a multiverse", "gold": "NOTENOUGHINFO", "category": "ambiguous"}
+{"id": "origin_life", "claim": "Life on Earth originated at deep-sea hydrothermal vents", "gold": "NOTENOUGHINFO", "category": "ambiguous"}

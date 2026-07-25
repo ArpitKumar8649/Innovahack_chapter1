@@ -11,6 +11,7 @@ with its Merkle root and signed verdicts (FEC layers 2-3).
 import secrets
 import time
 
+import authority
 import court
 import murli
 import scoring
@@ -120,9 +121,15 @@ async def run_pipeline(run: Run):
                 ch: merkle_proof(leaves, leaf_index[ch])
                 for ch in c.chunk_ids if ch in leaf_index
             }
+            dates = [
+                sources_by_id[sid].published_at
+                for sid in c.source_ids
+                if sid in sources_by_id and sources_by_id[sid].published_at
+            ]
             c.confidence, c.status = scoring.score_claim(
                 c.text, c.verdicts, c.chunk_ids, c.source_ids, sources_by_id,
                 c.id in flagged, c.hallucinations,
+                recency=authority.recency_score(dates),
             )
             run.emit("score", {"claim_id": c.id, "confidence": c.confidence,
                                "status": c.status})

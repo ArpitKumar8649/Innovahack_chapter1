@@ -43,6 +43,7 @@ def score_claim(
     sources_by_id: dict,
     contradiction_flagged: bool,
     hallucination_flags: list,
+    recency: float = 0.8,
 ) -> tuple[int, str]:
     """Returns (confidence 0-100, epistemic status)."""
     stances = [v.stance for v in verdicts]
@@ -67,7 +68,6 @@ def score_claim(
     specificity = (
         0.5 if any(w in claim_text.lower().split() for w in HEDGE_WORDS) else 1.0
     )
-    recency = 1.0  # Phase 2: source-date vs. topic-velocity analysis
 
     high_flag = any(f.get("severity") == "high" for f in hallucination_flags)
     hallu = 1.0 if high_flag else (0.5 if hallucination_flags else 0.0)
