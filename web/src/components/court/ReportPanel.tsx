@@ -7,6 +7,7 @@ import { ArgumentTreeView } from "./ArgumentTree";
 import { ClaimCard } from "./ClaimCard";
 import { EvidenceInspector } from "./EvidenceInspector";
 import { ProvenanceGraph } from "./ProvenanceGraph";
+import { RedTeamPanel } from "./RedTeamPanel";
 
 export function ReportPanel({ report, attestation, runId }: {
   report: Report;
@@ -16,6 +17,7 @@ export function ReportPanel({ report, attestation, runId }: {
   const [inspect, setInspect] = useState<{ claimId: number; chunkId?: string } | null>(null);
   const [complianceTrace, setComplianceTrace] = useState<any | null>(null);
   const [replayResult, setReplayResult] = useState<any | null>(null);
+  const [redTeamFindings, setRedTeamFindings] = useState<any[] | null>(null);
   const sources = useMemo(() => new Map(report.sources.map((s) => [s.id, s])), [report]);
   const inspectedClaim = inspect ? report.claims.find((c) => c.id === inspect.claimId) : null;
 
@@ -78,6 +80,16 @@ export function ReportPanel({ report, attestation, runId }: {
       setReplayResult(result);
     } catch (e) {
       console.error("Failed to load replay result:", e);
+    }
+  };
+
+  const loadRedTeamFindings = async () => {
+    if (!runId) return;
+    try {
+      const result = await api.getRedTeamFindings(runId);
+      setRedTeamFindings(result.findings || []);
+    } catch (e) {
+      console.error("Failed to load red-team findings:", e);
     }
   };
 
@@ -191,6 +203,9 @@ export function ReportPanel({ report, attestation, runId }: {
             <button className="btn btn-secondary" onClick={loadReplayResult}>
               🔄 Replay Workflow
             </button>
+            <button className="btn btn-secondary" onClick={loadRedTeamFindings}>
+              🔴 Red-Team Findings
+            </button>
           </div>
 
           {complianceTrace && (
@@ -205,6 +220,10 @@ export function ReportPanel({ report, attestation, runId }: {
               <h5 className="mono">Workflow Replay Result</h5>
               <pre className="trace-output">{JSON.stringify(replayResult, null, 2)}</pre>
             </div>
+          )}
+
+          {redTeamFindings !== null && (
+            <RedTeamPanel findings={redTeamFindings} />
           )}
         </div>
       )}

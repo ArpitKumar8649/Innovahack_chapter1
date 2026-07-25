@@ -18,14 +18,17 @@ import authority
 import argument
 import compliance
 import court
+import feedback
 import graph
 import llm
 import memory
 import metrics
 import murli
+import redteam
 import scoring
 import semantic
 import sentry_integration
+import tenants
 import workflow
 from evidence import Chunk, merkle_proof, merkle_root, publisher_of
 from models import ChunkRef, Report, Source, Verdict
@@ -35,7 +38,7 @@ STAGES = ["intake", "hypothesize", "research", "extract", "verify",
 
 
 class Run:
-    def __init__(self, run_id: str, topic: str, explain: str | None = None):
+    def __init__(self, run_id: str, topic: str, explain: str | None = None, tenant_id: str | None = None):
         self.id = run_id
         self.topic = topic
         self.run_key = secrets.token_hex(16)   # per-run HMAC key (published w/ report)
@@ -46,6 +49,8 @@ class Run:
         self.started = time.time()
         self.priors: list[dict] = []
         self.compliance_trace = compliance.create_compliance_trace(run_id, explain)
+        self.tenant_id = tenant_id
+        self.red_team_findings: list[dict] = []
 
     def emit(self, event: str, data: dict):
         self.history.append((event, data))
@@ -348,11 +353,34 @@ async def run_pipeline(run: Run):
         _learn(claims, cached_claims, sources, topic, run, semantic_enabled)
         workflow.checkpoint(run.id, "learning", {})
 
+        # --- 10. RED-TEAM (Phase 9) — adversarial probing of the report ---------
+        run.emit("stage", {"stage": "redteam", "status": "started"})
+        try:
+            findings = await redteam.probe_report(report.model_dump(), log=lambda m: run.log("redteam", m))
+            run.red_team_findings = findings
+            if findings:
+                run.emit("redteam", {"findings": findings})
+                # Feed high-severity findings into the feedback loop
+                for f in findings:
+                    if f["severity"] == "high":
+                        claim = next((c for c in claims if c.id == f["claim_id"]), None)
+                        if claim:
+                            feedback.record_feedback("red_team", claim.text, f["finding"], f["severity"])
+                run.log("redteam", f"red-team found {len(findings)} issue(s)")
+        except Exception as e:
+            run.log("redteam", f"red-team probe failed: {e}")
+        run.emit("stage", {"stage": "redteam", "status": "done"})
+        workflow.checkpoint(run.id, "redteam", {"findings": len(run.red_team_findings)})
+
         # Phase 8: workflow completion + metrics
         duration = time.time() - run.started
         workflow.finish_run(run.id, status="completed")
         metrics.record_run_completed("completed", duration)
         metrics.decrement_active_runs()
+
+        # Phase 9: tenant usage tracking
+        if run.tenant_id:
+            tenants.record_usage(run.tenant_id)
 
     except Exception as e:
         run.error = str(e)

@@ -654,6 +654,121 @@
   color: var(--ink); white-space: pre-wrap; word-break: break-word;
 }
 
+/* ================================ Phase 9: Red-Team Panel ================================ */
+.redteam-panel {
+  margin-top: 24px;
+  padding: 16px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+}
+
+.redteam-summary {
+  display: flex;
+  gap: 8px;
+  margin: 12px 0;
+  flex-wrap: wrap;
+}
+
+.severity-badge {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: var(--r-sm);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.severity-badge.high {
+  background: var(--red-soft);
+  color: var(--red);
+  border: 1px solid var(--red);
+}
+
+.severity-badge.medium {
+  background: var(--amber-soft);
+  color: var(--amber);
+  border: 1px solid var(--amber);
+}
+
+.severity-badge.low {
+  background: var(--accent-soft);
+  color: var(--accent);
+  border: 1px solid var(--accent);
+}
+
+.redteam-findings {
+  margin-top: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.redteam-finding {
+  padding: 12px;
+  border-radius: var(--r-sm);
+  border-left: 3px solid;
+  background: var(--bg-2);
+}
+
+.redteam-finding.severity-high {
+  border-left-color: var(--red);
+  background: var(--red-soft);
+}
+
+.redteam-finding.severity-medium {
+  border-left-color: var(--amber);
+  background: var(--amber-soft);
+}
+
+.redteam-finding.severity-low {
+  border-left-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.finding-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+  flex-wrap: wrap;
+}
+
+.finding-vector {
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--ink);
+}
+
+.finding-claim {
+  font-size: 11px;
+  color: var(--ink-2);
+  margin-left: auto;
+}
+
+.finding-text {
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--ink-2);
+  margin: 8px 0;
+}
+
+.finding-recommendation {
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--ink-2);
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--line-soft);
+}
+
+.finding-recommendation strong {
+  color: var(--ink);
+  font-weight: 600;
+}
+
 @media (max-width: 900px) {
   .report-radar { margin-left: 0; align-items: flex-start; }
 }

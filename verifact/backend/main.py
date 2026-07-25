@@ -21,14 +21,17 @@ from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 
 import api_v1
+import feedback
 import journal
 import llm
 import memory
 import metrics
+import redteam
 import referee
 import semantic
 import sentry_integration
 import tavily_client
+import tenants
 import workflow
 from fastapi.responses import Response
 from pipeline import Run, run_pipeline
@@ -49,11 +52,14 @@ def _startup():
     api_v1.init()
     workflow.init()
     sentry_integration.init()
+    tenants.init()
+    feedback.init()
 
 
 class ResearchRequest(BaseModel):
     topic: str
     explain: str | None = None  # Phase 8: compliance mode (?explain=full)
+    tenant_id: str | None = None  # Phase 9: multi-tenant support
 
 
 @app.post("/api/research")
@@ -61,8 +67,15 @@ async def start_research(req: ResearchRequest):
     topic = req.topic.strip()
     if not topic:
         raise HTTPException(400, "topic is required")
+
+    # Phase 9: tenant rate limiting
+    if req.tenant_id:
+        allowed, msg = tenants.check_rate_limit(req.tenant_id)
+        if not allowed:
+            raise HTTPException(429, msg)
+
     run_id = uuid.uuid4().hex[:12]
-    run = Run(run_id, topic, explain=req.explain)
+    run = Run(run_id, topic, explain=req.explain, tenant_id=req.tenant_id)
     RUNS[run_id] = run
     asyncio.create_task(_run_and_persist(run))
     return {"run_id": run_id}
@@ -283,3 +296,76 @@ async def replay_workflow(run_id: str):
 async def list_workflows(limit: int = 50):
     """List recent workflow runs (Phase 8)."""
     return {"workflows": workflow.list_runs(limit)}
+
+
+# ---------------------------------------------------------------------------
+# Phase 9 — Enterprise & Adversarial Maturity endpoints
+# ---------------------------------------------------------------------------
+
+@app.get("/api/reports/{run_id}/redteam")
+async def get_redteam_findings(run_id: str):
+    """Get red-team findings for a run (Phase 9)."""
+    run = RUNS.get(run_id)
+    if not run:
+        raise HTTPException(404, "run not found")
+    return {"findings": run.red_team_findings}
+
+
+@app.post("/api/tenants")
+async def create_tenant(name: str, plan: str = "free"):
+    """Create a new tenant (Phase 9)."""
+    try:
+        return tenants.create_tenant(name, plan)
+    except ValueError as e:
+        raise HTTPException(400, str(e))
+
+
+@app.get("/api/tenants")
+async def list_tenants():
+    """List all tenants (Phase 9)."""
+    return {"tenants": tenants.list_tenants()}
+
+
+@app.get("/api/tenants/stats")
+async def tenant_stats():
+    """Tenant system stats (Phase 9)."""
+    return tenants.stats()
+
+
+@app.get("/api/tenants/{tenant_id}")
+async def get_tenant(tenant_id: str):
+    """Get a tenant by ID (Phase 9)."""
+    tenant = tenants.get_tenant(tenant_id)
+    if not tenant:
+        raise HTTPException(404, "tenant not found")
+    return tenant
+
+
+@app.get("/api/tenants/{tenant_id}/usage")
+async def get_tenant_usage(tenant_id: str, days: int = 30):
+    """Get usage history for a tenant (Phase 9)."""
+    return {"usage": tenants.get_usage(tenant_id, days)}
+
+
+@app.get("/api/feedback/pending")
+async def get_pending_feedback(limit: int = 50):
+    """Get pending feedback signals (Phase 9)."""
+    return {"feedback": feedback.get_pending_feedback(limit)}
+
+
+@app.get("/api/feedback/policy")
+async def get_policy_recommendations():
+    """Generate policy recommendations from feedback (Phase 9)."""
+    return feedback.generate_policy_from_feedback()
+
+
+@app.get("/api/feedback/updates")
+async def get_policy_updates(limit: int = 20):
+    """Get recent policy updates (Phase 9)."""
+    return {"updates": feedback.get_policy_updates(limit)}
+
+
+@app.get("/api/feedback/stats")
+async def feedback_stats():
+    """Feedback loop stats (Phase 9)."""
+    return feedback.stats()

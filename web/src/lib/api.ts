@@ -42,6 +42,19 @@ export const api = {
   replayWorkflow: (runId: string) => get<any>(`/api/workflows/${runId}/replay`),
   listWorkflows: (limit = 50) => get<any>(`/api/workflows?limit=${limit}`),
 
+  // Phase 9: enterprise & adversarial maturity
+  getRedTeamFindings: (runId: string) => get<any>(`/api/reports/${runId}/redteam`),
+  createTenant: (name: string, plan = "free") =>
+    fetch(`/api/tenants?name=${encodeURIComponent(name)}&plan=${plan}`, { method: "POST" }).then(r => r.json()),
+  listTenants: () => get<any>("/api/tenants"),
+  getTenant: (tenantId: string) => get<any>(`/api/tenants/${tenantId}`),
+  getTenantUsage: (tenantId: string, days = 30) => get<any>(`/api/tenants/${tenantId}/usage?days=${days}`),
+  tenantStats: () => get<any>("/api/tenants/stats"),
+  getPendingFeedback: (limit = 50) => get<any>(`/api/feedback/pending?limit=${limit}`),
+  getPolicyRecommendations: () => get<any>("/api/feedback/policy"),
+  getPolicyUpdates: (limit = 20) => get<any>(`/api/feedback/updates?limit=${limit}`),
+  feedbackStats: () => get<any>("/api/feedback/stats"),
+
   recordEngagement: (payload: {
     run_id: string; topic: string; dwell_ms: number;
     inspector_opens: number; tree_views: number;
