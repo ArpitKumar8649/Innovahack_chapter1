@@ -11,35 +11,36 @@ const FRAG = `
 precision highp float;
 uniform float iTime;
 uniform vec2 iResolution;
-mat2 rotate2d(float a){ float c=cos(a),s=sin(a); return mat2(c,-s,s,c); }
-float variation(vec2 v1, vec2 v2, float strength, float speed){
-  return sin(dot(normalize(v1),normalize(v2))*strength + iTime*speed)/100.0;
-}
-vec3 paintCircle(vec2 uv, vec2 center, float rad, float width){
-  vec2 diff = center - uv;
+uniform vec3 uBackgroundColor;
+mat2 rotate2d(float angle){ float c=cos(angle),s=sin(angle); return mat2(c,-s,s,c); }
+float variation(vec2 v1,vec2 v2,float strength,float speed){ return sin(dot(normalize(v1),normalize(v2))*strength+iTime*speed)/100.0; }
+vec3 paintCircle(vec2 uv,vec2 center,float rad,float width){
+  vec2 diff = center-uv;
   float len = length(diff);
-  len += variation(diff, vec2(0.,1.), 5., 2.);
-  len -= variation(diff, vec2(1.,0.), 5., 2.);
-  float circle = smoothstep(rad-width, rad, len) - smoothstep(rad, rad+width, len);
+  len += variation(diff,vec2(0.,1.),5.,2.);
+  len -= variation(diff,vec2(1.,0.),5.,2.);
+  float circle = smoothstep(rad-width,rad,len)-smoothstep(rad,rad+width,len);
   return vec3(circle);
 }
 void main(){
-  vec2 uv = gl_FragCoord.xy / iResolution.xy;
+  vec2 uv = gl_FragCoord.xy/iResolution.xy;
   uv.x *= 1.5; uv.x -= 0.25;
   float mask = 0.0;
   float radius = .35;
   vec2 center = vec2(.5);
-  mask += paintCircle(uv, center, radius, .035).r;
-  mask += paintCircle(uv, center, radius-.018, .01).r;
-  mask += paintCircle(uv, center, radius+.018, .005).r;
-  vec2 v = rotate2d(iTime) * uv;
-  /* rose foreground: warm pinks instead of cyan/blue */
-  vec3 foregroundColor = vec3(0.96 + v.x*0.04, 0.28 + v.y*0.15, 0.37 + v.x*0.1);
-  vec3 bgColor = vec3(0.078, 0.024, 0.043);
-  vec3 color = mix(bgColor, foregroundColor, mask * 0.35);
-  color = mix(color, vec3(1.0, 0.75, 0.8), paintCircle(uv, center, radius, .003).r * 0.5);
-  gl_FragColor = vec4(color, 1.);
+  mask += paintCircle(uv,center,radius,.035).r;
+  mask += paintCircle(uv,center,radius-.018,.01).r;
+  mask += paintCircle(uv,center,radius+.018,.005).r;
+  vec2 v=rotate2d(iTime)*uv;
+  vec3 foregroundColor=vec3(v.x,v.y,.7-v.y*v.x);
+  vec3 color=mix(uBackgroundColor,foregroundColor,mask);
+  color=mix(color,vec3(1.),paintCircle(uv,center,radius,.003).r);
+  gl_FragColor=vec4(color,1.);
 }`;
+
+/* The page is dark-themed; background is the site's rose-noir (#14060b)
+   so the orbits read exactly as the original but over a rosy base. */
+const BG_COLOR = new Float32Array([0.078, 0.024, 0.043]);
 
 function ShaderCanvas() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -71,6 +72,8 @@ function ShaderCanvas() {
 
     const iTime = gl.getUniformLocation(prog, "iTime");
     const iRes = gl.getUniformLocation(prog, "iResolution");
+    const bgColorLoc = gl.getUniformLocation(prog, "uBackgroundColor");
+    gl.uniform3fv(bgColorLoc, BG_COLOR);
 
     let raf: number;
     const render = (t: number) => {
