@@ -28,6 +28,10 @@ API_KEY = os.environ.get("DASHSCOPE_API_KEY", "")
 
 _use_chat = os.environ.get("LLM_USE_CHAT", "") == "1"  # chat endpoint first
 _model_override: str | None = None   # set when the primary model's quota runs out
+# Some reasoning models (e.g. qwen3.7-max-preview) REQUIRE thinking mode on.
+# We start with thinking off (cheaper/faster) and flip it on if DashScope
+# rejects the request with the "enable_thinking restricted to True" error.
+_thinking_forced = os.environ.get("LLM_ENABLE_THINKING", "") == "1"
 
 _QUOTA_MARKERS = ("free quota has been exhausted", "FreeTierOnly",
                   "quota has been exhausted", "AllocationQuota")
@@ -106,7 +110,7 @@ async def chat(
     the verifier panel can run model-diverse (one model per verifier) or
     persona-diverse (same model, different lenses) purely by config.
     """
-    global _use_chat, _model_override
+    global _use_chat, _model_override, _thinking_forced
     model = model or current_model()
     last_err = None
     for attempt in range(8):
@@ -116,19 +120,26 @@ async def chat(
                     resp = await _post(CHAT_URL, {
                         "model": model, "max_tokens": max_tokens,
                         "temperature": temperature, "messages": messages,
-                        "enable_thinking": False,
+                        "enable_thinking": _thinking_forced,
                     })
                 else:
                     resp = await _post(RESPONSES_URL, {
                         "model": model, "max_tokens": max_tokens,
                         "temperature": temperature, "input": messages,
-                        "enable_thinking": False,
+                        "enable_thinking": _thinking_forced,
                     })
 
             if resp.status_code == 404 and not _use_chat:
                 _use_chat = True  # Responses endpoint unavailable → chat fallback
                 if log:
                     log("responses endpoint unavailable, using chat endpoint")
+                continue
+            if resp.status_code == 400 and "enable_thinking" in resp.text \
+                    and not _thinking_forced:
+                # reasoning model requires thinking mode on → enable + retry
+                _thinking_forced = True
+                if log:
+                    log(f"{model} requires thinking mode — enabling")
                 continue
             if resp.status_code in (429, 403):
                 # quota exhausted → fall back to the backup model (once)
