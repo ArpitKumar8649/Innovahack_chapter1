@@ -1,15 +1,29 @@
-# runtime artifacts
-verifact/data/
-__pycache__/
+```gitignore
+# Compiled and build artifacts
 *.pyc
+__pycache__/
+
+# Dependencies
 .venv/
+venv/
+node_modules/
+
+# Logs and temp files
 *.log
-.env
-
-# web (React) build artifacts
-web/node_modules/
-web/dist/
-
-# OS / editor
-.DS_Store
+*.tmp
 *.swp
+
+# Environment
+.env
+.env.local
+*.env.*
+
+# Editors
+.vscode/
+.idea/
+
+# Office files
+*.pptx
+*.docx
+*.xlsx
+```
