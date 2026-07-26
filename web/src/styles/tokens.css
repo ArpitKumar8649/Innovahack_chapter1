@@ -1,19 +1,19 @@
 /* VeritasAI design tokens — a courtroom, not a dashboard. */
 :root {
-  /* surfaces — deep ink navy, layered */
-  --bg: #0b1020;
-  --bg-2: #0f1629;
-  --panel: #131b31;
-  --panel-2: #18223c;
-  --raise: #1d2946;
-  --line: #263354;
-  --line-soft: #1e2a47;
+  /* surfaces — deep rose noir, layered (built from the footer's dark glass) */
+  --bg: #14060b;
+  --bg-2: #1c0a11;
+  --panel: #241019;
+  --panel-2: #2c1520;
+  --raise: #351b28;
+  --line: #4a2436;
+  --line-soft: #3a1c2b;
 
-  /* text */
-  --ink: #eef1f8;
-  --ink-2: #b8c1d6;
-  --ink-3: #7e8aa6;
-  --ink-4: #55617e;
+  /* text — rose-warmed ink */
+  --ink: #f7edf1;
+  --ink-2: #d3b8c2;
+  --ink-3: #a5828f;
+  --ink-4: #7a5c68;
 
   /* the bench — rose (matches the footer palette exactly) */
   --gold: #f43f5e;                 /* rose-500 */
@@ -49,8 +49,8 @@
   --r-sm: 8px;
   --r-md: 12px;
   --r-lg: 18px;
-  --shadow-1: 0 2px 10px rgba(4, 8, 20, 0.45);
-  --shadow-2: 0 12px 40px rgba(4, 8, 20, 0.55);
+  --shadow-1: 0 2px 10px rgba(20, 4, 10, 0.5);
+  --shadow-2: 0 12px 40px rgba(20, 4, 10, 0.6);
 
   /* motion */
   --ease: cubic-bezier(0.22, 1, 0.36, 1);

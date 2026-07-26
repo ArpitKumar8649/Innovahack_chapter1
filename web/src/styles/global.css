@@ -64,7 +64,7 @@ button { font-family: inherit; cursor: pointer; }
 .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
 .btn-gold {
   background: linear-gradient(135deg, var(--gold), #be123c);
-  border-color: transparent; color: #171106;
+  border-color: transparent; color: #fff;
 }
 .btn-gold:hover { box-shadow: 0 8px 26px rgba(244,63,94,0.35); }
 

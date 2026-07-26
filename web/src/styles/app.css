@@ -271,10 +271,10 @@
 /* terminal */
 .terminal {
   display: flex; flex-direction: column;
-  background: #070b16; border: 1px solid var(--line); border-radius: var(--r-lg);
+  background: #150810; border: 1px solid var(--line); border-radius: var(--r-lg);
   min-height: 480px; max-height: 640px; overflow: hidden;
 }
-.term-head { background: #0a0f1d; }
+.term-head { background: #1f0e16; }
 .term-head .panel-title { font-size: 12px; color: var(--ink-3); }
 .term-controls { display: flex; align-items: center; gap: 12px; }
 .term-toggle { background: none; border: none; color: var(--green); font-size: 10.5px; }
@@ -497,7 +497,7 @@
 }
 .weakest-flag {
   font-family: var(--font-mono); font-size: 10px; font-weight: 700;
-  text-transform: uppercase; letter-spacing: 0.08em; color: #171106;
+  text-transform: uppercase; letter-spacing: 0.08em; color: #241019;
   background: var(--amber); border-radius: 99px; padding: 3px 10px;
 }
 .weakest-link a { color: var(--accent); }
@@ -538,7 +538,7 @@
 .tree-relation { font-family: var(--font-mono); font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; display: flex; align-items: center; gap: 6px; }
 .tree-relation.kind-supports { color: var(--green); }
 .tree-relation.kind-attacks { color: var(--red); }
-.tree-weak-flag { font-style: normal; color: #171106; background: var(--amber); border-radius: 99px; padding: 1px 7px; font-size: 8px; }
+.tree-weak-flag { font-style: normal; color: #241019; background: var(--amber); border-radius: 99px; padding: 1px 7px; font-size: 8px; }
 .tree-unattributed { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: 12px; padding-top: 12px; border-top: 1px dashed var(--line); }
 .tree-unattr-chip { display: inline-flex; align-items: center; gap: 6px; font-size: 11px; color: var(--ink-2); background: var(--bg-2); border: 1px solid var(--line-soft); border-radius: 99px; padding: 3px 10px; }
 .tree-unattr-chip .status-pill { font-size: 8px; padding: 1px 6px; }
