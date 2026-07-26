@@ -27,6 +27,7 @@ export function SignUp() {
 
   return (
     <div className="auth-page">
+      <Link to="/" className="auth-back mono">← Back</Link>
       <div className="auth-glow auth-glow-1" />
       <div className="auth-glow auth-glow-2" />
       <div className="auth-glow auth-glow-3" />

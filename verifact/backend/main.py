@@ -278,9 +278,10 @@ async def get_compliance_trace(run_id: str):
     run = RUNS.get(run_id)
     if not run:
         raise HTTPException(404, "run not found")
-    if not run.compliance_trace.enabled:
-        raise HTTPException(400, "compliance mode not enabled for this run (use ?explain=full)")
-    return run.compliance_trace.to_dict()
+    trace = getattr(run, "compliance_trace", None)
+    if trace is None or not trace.enabled:
+        raise HTTPException(400, "compliance mode not enabled for this run (use explain=full)")
+    return trace.to_dict()
 
 
 @app.get("/api/workflows/{run_id}/replay")

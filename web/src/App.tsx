@@ -7,7 +7,9 @@ import { Pricing } from "./components/pricing/Pricing";
 
 function TopBar() {
   const { pathname } = useLocation();
-  const isAuth = pathname === "/signin" || pathname === "/signup";
+  // Full-screen pages (auth, pricing) render their own chrome — no topbar.
+  const bare = pathname === "/signin" || pathname === "/signup" || pathname === "/pricing";
+  if (bare) return null;
   return (
     <header className="topbar">
       <Link to="/" className="brand">
@@ -23,9 +25,7 @@ function TopBar() {
         <Link to="/pricing" className={pathname === "/pricing" ? "nav-link active" : "nav-link"}>
           Pricing
         </Link>
-        {!isAuth && (
-          <Link to="/signin" className="nav-auth btn-rose">Sign in</Link>
-        )}
+        <Link to="/signin" className="nav-auth btn-rose">Sign in</Link>
       </nav>
     </header>
   );

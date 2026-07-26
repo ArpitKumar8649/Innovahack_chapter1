@@ -136,7 +136,8 @@ function reducer(s: RunState, a: Action): RunState {
       };
 
     case "sources": {
-      const best = Math.min(...a.sources.map((x) => x.authority_tier));
+      const tiers = a.sources.map((x) => x.authority_tier);
+      const best = tiers.length ? Math.min(...tiers) : 0;
       return {
         ...s, sources: a.sources,
         messages: pushMsg(s, {

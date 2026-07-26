@@ -374,27 +374,37 @@ async def run_pipeline(run: Run):
 
         # Phase 8: workflow completion + metrics
         duration = time.time() - run.started
-        workflow.finish_run(run.id, status="completed")
-        metrics.record_run_completed("completed", duration)
-        metrics.decrement_active_runs()
+        try:
+            workflow.finish_run(run.id, status="completed")
+            metrics.record_run_completed("completed", duration)
+        finally:
+            metrics.decrement_active_runs()   # always balance the increment
 
         # Phase 9: tenant usage tracking
         if run.tenant_id:
-            tenants.record_usage(run.tenant_id)
+            try:
+                tenants.record_usage(run.tenant_id)
+            except Exception:
+                pass
 
     except Exception as e:
         run.error = str(e)
         run.emit("error", {"message": str(e)})
         # Phase 8: workflow failure + metrics + Sentry
         duration = time.time() - run.started
-        workflow.finish_run(run.id, status="failed", error=str(e))
-        metrics.record_run_completed("failed", duration)
-        metrics.decrement_active_runs()
-        sentry_integration.capture_error(e, {
-            "run_id": run.id,
-            "topic": run.topic,
-            "duration": duration
-        })
+        try:
+            workflow.finish_run(run.id, status="failed", error=str(e))
+            metrics.record_run_completed("failed", duration)
+        finally:
+            metrics.decrement_active_runs()   # always balance the increment
+        try:
+            sentry_integration.capture_error(e, {
+                "run_id": run.id,
+                "topic": run.topic,
+                "duration": duration,
+            })
+        except Exception:
+            pass
     finally:
         run.done = True
 

@@ -110,6 +110,14 @@ export function ReportPanel({ report, attestation, runId }: {
             {report.memory_stats?.rounds > 1 ? ` · ${report.memory_stats.rounds} debate rounds` : ""}
           </p>
           <AttestationBadge attestation={attestation} root={report.merkle_root} />
+          <button
+            type="button"
+            className="btn briefing-export mono"
+            onClick={() => window.print()}
+            title="Export the argument + evidence tables as a PDF briefing book"
+          >
+            ⬇ Export briefing book (PDF)
+          </button>
         </div>
         {radar && (
           <div className="report-radar">

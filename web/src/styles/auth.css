@@ -11,6 +11,19 @@
   background: var(--bg);
 }
 
+/* back link */
+.auth-back {
+  position: absolute;
+  top: 20px;
+  left: 24px;
+  z-index: 20;
+  font-size: 13px;
+  color: var(--ink-3);
+  text-decoration: none;
+  transition: color 0.3s;
+}
+.auth-back:hover { color: var(--rose-light); text-decoration: none; }
+
 /* rose glow orbs */
 .auth-glow {
   position: absolute;

@@ -1,9 +1,15 @@
+/* CourtView — The Debate Theater. A 3-column command center:
+   left = The Bench (agent state), center = the Argument Graph,
+   right = the Evidence Drawer. The linear chat is gone; the debate is
+   spatial. Intervention controls let you freeze the feed or re-argue fresh. */
 import { useEffect, useState } from "react";
 import { useRun } from "../../hooks/useRun";
 import { api } from "../../lib/api";
 import type { RunSummary } from "../../types";
-import { StageTrack } from "./StageTrack";
-import { ChatSpace } from "./ChatSpace";
+import { AgentCast } from "./theater/AgentCast";
+import { ArgumentGraph } from "./theater/ArgumentGraph";
+import { EvidenceDrawer } from "./theater/EvidenceDrawer";
+import { PhaseStepper, ConsensusDiff } from "./theater/PhaseStepper";
 import { Terminal } from "./Terminal";
 import { ReportPanel } from "./ReportPanel";
 
@@ -20,10 +26,21 @@ export function CourtView() {
   const [busy, setBusy] = useState(false);
   const [history, setHistory] = useState<RunSummary[]>([]);
   const [complianceMode, setComplianceMode] = useState(false);
+  const [selectedClaimId, setSelectedClaimId] = useState<number | null>(null);
+  const [showTerminal, setShowTerminal] = useState(false);
 
   useEffect(() => {
     api.listRuns().then((runs) => setHistory(runs.filter((r) => !r.error))).catch(() => {});
   }, [state.status]);
+
+  useEffect(() => {
+    if (state.status === "done" || state.status === "error") setBusy(false);
+  }, [state.status]);
+
+  // reset selection when a new trial starts
+  useEffect(() => {
+    if (state.status === "running") setSelectedClaimId(null);
+  }, [state.runId, state.status]);
 
   const submit = async (t?: string) => {
     const value = (t ?? topic).trim();
@@ -31,23 +48,18 @@ export function CourtView() {
     setBusy(true);
     try {
       await start(value, complianceMode ? "full" : undefined);
-    } catch (e) {
+    } catch {
       setBusy(false);
     }
   };
 
-  useEffect(() => {
-    if (state.status === "done" || state.status === "error") setBusy(false);
-  }, [state.status]);
+  const inSession = state.status === "running" || state.status === "done";
 
   return (
-    <main className="court wrap">
-      {/* intake */}
-      <section className="intake">
-        <form
-          className="intake-form"
-          onSubmit={(e) => { e.preventDefault(); void submit(); }}
-        >
+    <main className="court theater">
+      {/* intake — always available */}
+      <section className="intake wrap">
+        <form className="intake-form" onSubmit={(e) => { e.preventDefault(); void submit(); }}>
           <input
             className="intake-input"
             value={topic}
@@ -76,28 +88,63 @@ export function CourtView() {
             />
             <span className="mono">compliance mode</span>
           </label>
+          <button
+            className="metrics-link mono"
+            onClick={() => setShowTerminal((s) => !s)}
+            type="button"
+          >
+            {showTerminal ? "▾ hide pipeline log" : "▸ pipeline log"}
+          </button>
           <a href="/metrics" target="_blank" rel="noopener noreferrer" className="metrics-link mono">
             📊 metrics
           </a>
         </div>
       </section>
 
-      <StageTrack state={state} />
+      <PhaseStepper state={state} />
 
-      {/* the floor + the logs */}
-      <div className="court-grid">
-        <ChatSpace state={state} />
-        <Terminal state={state} />
-      </div>
+      {state.error && <div className="error-banner wrap">⚠ {state.error}</div>}
 
-      {state.error && <div className="error-banner">⚠ {state.error}</div>}
+      {/* the 3-column theater */}
+      {inSession ? (
+        <div className="theater-grid wrap">
+          <AgentCast state={state} />
+          <ArgumentGraph
+            state={state}
+            topic={state.topic}
+            selectedClaimId={selectedClaimId}
+            onSelect={setSelectedClaimId}
+          />
+          <EvidenceDrawer
+            state={state}
+            selectedClaimId={selectedClaimId}
+            onSelect={setSelectedClaimId}
+          />
+        </div>
+      ) : (
+        <div className="theater-idle wrap">
+          <span className="idle-sigil">⚖</span>
+          <h3 className="display">The court is not in session.</h3>
+          <p>Put a claim on trial above and watch ten agents argue it into receipts.</p>
+        </div>
+      )}
 
-      {state.report && (
-        <ReportPanel report={state.report} attestation={state.attestation} runId={state.runId ?? undefined} />
+      {showTerminal && <div className="wrap theater-terminal"><Terminal state={state} /></div>}
+
+      {/* consensus diff + full report once the trial concludes */}
+      {state.status === "done" && state.report && (
+        <>
+          <div className="wrap"><ConsensusDiff state={state} /></div>
+          <ReportPanel
+            report={state.report}
+            attestation={state.attestation}
+            runId={state.runId ?? undefined}
+          />
+        </>
       )}
 
       {history.length > 0 && (
-        <section className="history">
+        <section className="history wrap">
           <h4 className="section-h">Past trials</h4>
           <div className="history-list">
             {history.map((h) => (

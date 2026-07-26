@@ -26,6 +26,7 @@ export function SignIn() {
 
   return (
     <div className="auth-page">
+      <Link to="/" className="auth-back mono">← Back</Link>
       {/* background glow orbs */}
       <div className="auth-glow auth-glow-1" />
       <div className="auth-glow auth-glow-2" />
