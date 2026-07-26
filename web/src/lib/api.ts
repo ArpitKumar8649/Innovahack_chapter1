@@ -1,15 +1,18 @@
-/* REST client for the VeritasAI API (same-origin; proxied to :8000). */
+/* REST client for the VeritasAI API.
+   Same-origin when API_BASE is empty (local/Docker); cross-origin when
+   VITE_API_BASE points at the Render backend (Vercel split deploy). */
 import type { Attestation, Calibration, Engagement, Health, MemoryStats, Report, RunSummary, SemanticStats } from "../types";
+import { API_BASE } from "./config";
 
 async function get<T>(path: string): Promise<T> {
-  const res = await fetch(path);
+  const res = await fetch(`${API_BASE}${path}`);
   if (!res.ok) throw new Error(`${path} → HTTP ${res.status}`);
   return res.json() as Promise<T>;
 }
 
 export const api = {
   startResearch: async (topic: string, explain?: string): Promise<string> => {
-    const res = await fetch("/api/research", {
+    const res = await fetch(`${API_BASE}/api/research`, {
       method: "POST",
       headers: { "content-type": "application/json" },
       body: JSON.stringify({ topic, explain }),
@@ -45,7 +48,7 @@ export const api = {
   // Phase 9: enterprise & adversarial maturity
   getRedTeamFindings: (runId: string) => get<any>(`/api/reports/${runId}/redteam`),
   createTenant: (name: string, plan = "free") =>
-    fetch(`/api/tenants?name=${encodeURIComponent(name)}&plan=${plan}`, { method: "POST" }).then(r => r.json()),
+    fetch(`${API_BASE}/api/tenants?name=${encodeURIComponent(name)}&plan=${plan}`, { method: "POST" }).then(r => r.json()),
   listTenants: () => get<any>("/api/tenants"),
   getTenant: (tenantId: string) => get<any>(`/api/tenants/${tenantId}`),
   getTenantUsage: (tenantId: string, days = 30) => get<any>(`/api/tenants/${tenantId}/usage?days=${days}`),
@@ -60,7 +63,7 @@ export const api = {
     inspector_opens: number; tree_views: number;
   }): void => {
     // fire-and-forget; engagement is best-effort telemetry
-    fetch("/api/engagement", {
+    fetch(`${API_BASE}/api/engagement`, {
       method: "POST",
       headers: { "content-type": "application/json" },
       body: JSON.stringify(payload),

@@ -1,0 +1,18 @@
+# Backend-only image for Render (no frontend/nginx — the frontend lives on Vercel).
+FROM python:3.12-slim
+
+WORKDIR /app
+
+# install deps first (better layer caching)
+COPY verifact/backend/requirements.txt ./verifact/backend/requirements.txt
+RUN pip install --no-cache-dir -r ./verifact/backend/requirements.txt
+
+# copy the backend (keep the verifact/ structure so ../data resolves cleanly)
+COPY verifact/ ./verifact/
+
+WORKDIR /app/verifact/backend
+
+EXPOSE 8000
+
+# Render sets $PORT; default to 8000
+CMD uvicorn main:app --host 0.0.0.0 --port ${PORT:-8000}

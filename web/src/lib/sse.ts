@@ -1,5 +1,6 @@
 /* Typed EventSource wrapper for the run stream. */
 import type { SseEventMap } from "../types";
+import { API_BASE } from "./config";
 
 export type SseHandlers = {
   [K in keyof SseEventMap]?: (data: SseEventMap[K]) => void;
@@ -10,7 +11,7 @@ export type SseHandlers = {
  * Events are JSON-decoded and dispatched to the matching handler.
  */
 export function streamRun(runId: string, handlers: SseHandlers): () => void {
-  const es = new EventSource(`/api/research/${runId}/stream`);
+  const es = new EventSource(`${API_BASE}/api/research/${runId}/stream`);
 
   (Object.keys(handlers) as (keyof SseEventMap)[]).forEach((name) => {
     const fn = handlers[name];
