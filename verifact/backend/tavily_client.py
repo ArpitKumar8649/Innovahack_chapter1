@@ -3,9 +3,7 @@ import os
 
 import httpx
 
-TAVILY_API_KEY = os.environ.get(
-    "TAVILY_API_KEY", "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"
-)
+TAVILY_API_KEY = os.environ.get("TAVILY_API_KEY", "")
 API = "https://api.tavily.com"
 HEADERS = {"Authorization": f"Bearer {TAVILY_API_KEY}",
            "Content-Type": "application/json"}

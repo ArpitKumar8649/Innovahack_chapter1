@@ -9,9 +9,7 @@ import os
 
 import httpx
 
-SERPER_API_KEY = os.environ.get(
-    "SERPER_API_KEY", "c4d60a06b0705a4ee06d51409a201d7c69ebdbcb"
-)
+SERPER_API_KEY = os.environ.get("SERPER_API_KEY", "")
 BASE = "https://google.serper.dev"
 HEADERS = {"X-API-KEY": SERPER_API_KEY, "Content-Type": "application/json"}
 

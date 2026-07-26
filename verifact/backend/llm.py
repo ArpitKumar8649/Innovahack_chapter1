@@ -24,10 +24,7 @@ CHAT_URL = os.environ.get(
 )
 MODEL = os.environ.get("LLM_MODEL", "qwen3.5-plus")
 FALLBACK_MODEL = os.environ.get("LLM_FALLBACK_MODEL", "qwen3.6-plus-2026-04-02")
-API_KEY = os.environ.get(
-    "DASHSCOPE_API_KEY",
-    "sk-ws-H.YLIERH.4UJP.MEYCIQCG4DPU929kkt1rbKAoDCfzXsVoRty7M-hKYoD2BnbpeQIhAKBBA16xW6vOHu7knYDgFJ_yXsm9mOanyjb-5Xwm1tH4",
-)
+API_KEY = os.environ.get("DASHSCOPE_API_KEY", "")
 
 _use_chat = os.environ.get("LLM_USE_CHAT", "") == "1"  # chat endpoint first
 _model_override: str | None = None   # set when the primary model's quota runs out
