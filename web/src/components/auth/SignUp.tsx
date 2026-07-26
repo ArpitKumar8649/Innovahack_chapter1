@@ -1,14 +1,18 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../../auth";
 
 /** Rose-themed sign-up — mirrors the sign-in glass card design. */
 export function SignUp() {
+  const navigate = useNavigate();
+  const { register } = useAuth();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [focused, setFocused] = useState<string | null>(null);
   const [tilt, setTilt] = useState({ x: 0, y: 0 });
 
@@ -19,10 +23,26 @@ export function SignUp() {
     setTilt({ x: py * -6, y: px * 6 });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError(null);
+    if (password !== confirm) {
+      setError("Passwords do not match");
+      return;
+    }
+    if (password.length < 6) {
+      setError("Password must be at least 6 characters");
+      return;
+    }
     setIsLoading(true);
-    setTimeout(() => setIsLoading(false), 2000);
+    try {
+      await register(email, name, password);
+      navigate("/court");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Registration failed");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -146,6 +166,8 @@ export function SignUp() {
                   required
                 />
               </div>
+
+              {error && <div className="auth-error">{error}</div>}
 
               <button type="submit" className="auth-submit btn-rose" disabled={isLoading}>
                 {isLoading ? (

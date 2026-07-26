@@ -15,12 +15,13 @@ import asyncio
 import json
 import uuid
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 
 import api_v1
+import auth
 import feedback
 import journal
 import llm
@@ -46,6 +47,7 @@ RUNS: dict[str, Run] = {}
 
 @app.on_event("startup")
 def _startup():
+    auth.init()
     journal.init()
     memory.init()
     referee.init()
@@ -56,6 +58,10 @@ def _startup():
     feedback.init()
 
 
+# user authentication (register / login / me)
+app.include_router(auth.router)
+
+
 class ResearchRequest(BaseModel):
     topic: str
     explain: str | None = None  # Phase 8: compliance mode (?explain=full)
@@ -63,7 +69,7 @@ class ResearchRequest(BaseModel):
 
 
 @app.post("/api/research")
-async def start_research(req: ResearchRequest):
+async def start_research(req: ResearchRequest, request: Request):
     topic = req.topic.strip()
     if not topic:
         raise HTTPException(400, "topic is required")
@@ -74,8 +80,13 @@ async def start_research(req: ResearchRequest):
         if not allowed:
             raise HTTPException(429, msg)
 
+    # tag the run with the authenticated user (if any)
+    user = auth.get_current_user(request)
+    user_id = user["id"] if user else None
+
     run_id = uuid.uuid4().hex[:12]
     run = Run(run_id, topic, explain=req.explain, tenant_id=req.tenant_id)
+    run.user_id = user_id
     RUNS[run_id] = run
     asyncio.create_task(_run_and_persist(run))
     return {"run_id": run_id}
@@ -145,8 +156,10 @@ async def verify_report(run_id: str):
 
 
 @app.get("/api/runs")
-async def list_runs():
-    return {"runs": journal.list_runs()}
+async def list_runs(request: Request):
+    user = auth.get_current_user(request)
+    user_id = user["id"] if user else None
+    return {"runs": journal.list_runs(user_id=user_id)}
 
 
 @app.get("/api/calibration")

@@ -1,5 +1,12 @@
 /* Types mirroring the FastAPI backend (verifact/backend/models.py + SSE events). */
 
+export interface AuthUser {
+  id: number;
+  email: string;
+  name: string;
+  created_at: number;
+}
+
 export type Stance = "support" | "refute" | "insufficient";
 export type Status =
   | "ESTABLISHED" | "SUPPORTED" | "CONTESTED"

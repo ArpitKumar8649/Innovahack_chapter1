@@ -45,6 +45,8 @@ def init():
         cols = [r[1] for r in con.execute("PRAGMA table_info(runs)")]
         if "gold" not in cols:
             con.execute("ALTER TABLE runs ADD COLUMN gold TEXT")
+        if "user_id" not in cols:
+            con.execute("ALTER TABLE runs ADD COLUMN user_id INTEGER")
 
 
 def save_run(run):
@@ -55,14 +57,15 @@ def save_run(run):
         con.execute(
             """INSERT OR REPLACE INTO runs
                (run_id, topic, started, finished, trust_score, merkle_root,
-                run_key, error, report, gold)
-               VALUES (?,?,?,?,?,?,?,?,?,?)""",
+                run_key, error, report, gold, user_id)
+               VALUES (?,?,?,?,?,?,?,?,?,?,?)""",
             (run.id, run.topic, run.started, _now(),
              run.report.trust_score if run.report else None,
              run.report.merkle_root if run.report else "",
              run.run_key, run.error,
              json.dumps(payload) if payload else None,
-             getattr(run, "gold", None)),
+             getattr(run, "gold", None),
+             getattr(run, "user_id", None)),
         )
 
 
@@ -78,12 +81,18 @@ def load_run(run_id: str) -> dict | None:
             "report": json.loads(row[3]) if row[3] else None}
 
 
-def list_runs(limit: int = 20) -> list[dict]:
+def list_runs(limit: int = 20, user_id: int | None = None) -> list[dict]:
     with _lock, sqlite3.connect(DB_PATH) as con:
-        rows = con.execute(
-            """SELECT run_id, topic, trust_score, error FROM runs
-               WHERE run_id NOT LIKE 'eval-%'
-               ORDER BY finished DESC LIMIT ?""", (limit,)).fetchall()
+        if user_id is not None:
+            rows = con.execute(
+                """SELECT run_id, topic, trust_score, error FROM runs
+                   WHERE run_id NOT LIKE 'eval-%' AND user_id=?
+                   ORDER BY finished DESC LIMIT ?""", (user_id, limit)).fetchall()
+        else:
+            rows = con.execute(
+                """SELECT run_id, topic, trust_score, error FROM runs
+                   WHERE run_id NOT LIKE 'eval-%'
+                   ORDER BY finished DESC LIMIT ?""", (limit,)).fetchall()
     return [{"run_id": r[0], "topic": r[1], "trust_score": r[2], "error": r[3]}
             for r in rows]
 

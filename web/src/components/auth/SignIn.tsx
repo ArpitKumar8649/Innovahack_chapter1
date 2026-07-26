@@ -1,13 +1,17 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../../auth";
 
 /** Rose-themed sign-in — glass card, animated light beams, 3D tilt on hover. */
 export function SignIn() {
+  const navigate = useNavigate();
+  const { login } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [focused, setFocused] = useState<string | null>(null);
   const [tilt, setTilt] = useState({ x: 0, y: 0 });
 
@@ -18,10 +22,18 @@ export function SignIn() {
     setTilt({ x: py * -6, y: px * 6 });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError(null);
     setIsLoading(true);
-    setTimeout(() => setIsLoading(false), 2000);
+    try {
+      await login(email, password);
+      navigate("/court");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Login failed");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -126,6 +138,8 @@ export function SignIn() {
                 </label>
                 <a href="#" className="auth-forgot">Forgot password?</a>
               </div>
+
+              {error && <div className="auth-error">{error}</div>}
 
               <button type="submit" className="auth-submit btn-rose" disabled={isLoading}>
                 {isLoading ? (
