@@ -41,7 +41,7 @@ export function ArgumentGraph({ state, topic, selectedClaimId, onSelect }: Props
   const hasContent = graph.nodes.length > 1;
 
   return (
-    <section className="arg-graph">
+    <section className="arg-graph glow-card">
       <div className="graph-head">
         <span className="graph-title display">The Argument</span>
         <GraphLegend />

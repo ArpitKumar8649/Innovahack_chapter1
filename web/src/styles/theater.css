@@ -26,6 +26,11 @@
   display: flex;
   flex-direction: column;
   min-height: 0;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  padding: 14px;
+  overflow: hidden;
 }
 .cast-head {
   display: flex;
@@ -571,6 +576,23 @@
   .phase-stepper { flex-direction: column; gap: 8px; align-items: stretch; }
   .phase-wrap { flex-direction: column; }
   .phase-link { width: 1px; height: 14px; margin: 4px 0; min-width: 1px; }
+}
+
+/* ---- mobile (≤640px) ---- */
+@media (max-width: 640px) {
+  .theater-grid { gap: 12px; }
+  .agent-cast, .arg-graph, .evidence-drawer { padding: 12px; }
+  .cast-list { gap: 10px; padding-bottom: 6px; }
+  .cast-card { min-width: 200px; padding: 10px; }
+  .graph-stage { min-height: 320px; }
+  .graph-head { padding: 10px 12px; }
+  .graph-legend { gap: 8px; font-size: 9px; }
+  .graph-title { font-size: 16px; }
+  .drawer-inner { padding: 12px; gap: 12px; }
+  .claim-detail-text { font-size: 13.5px; }
+  .verdict-card { padding: 9px 10px; }
+  .phase { padding: 8px 12px; }
+  .phase-label { font-size: 12px; }
 }
 
 /* ==================================================================== */

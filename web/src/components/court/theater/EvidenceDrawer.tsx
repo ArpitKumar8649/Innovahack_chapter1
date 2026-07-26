@@ -19,7 +19,7 @@ export function EvidenceDrawer({ state, selectedClaimId, onSelect }: Props) {
     : null;
 
   return (
-    <aside className="evidence-drawer">
+    <aside className="evidence-drawer glow-card">
       {claim ? (
         <ClaimDetail claim={claim} state={state} onClear={() => onSelect(null)} />
       ) : (

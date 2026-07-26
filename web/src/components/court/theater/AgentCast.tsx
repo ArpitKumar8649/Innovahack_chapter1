@@ -116,7 +116,7 @@ function StanceMeter({ tally }: { tally: Record<Stance, number> }) {
 export function AgentCast({ state }: { state: RunState }) {
   const running = state.status === "running";
   return (
-    <aside className="agent-cast">
+    <aside className="agent-cast glow-card">
       <div className="cast-head">
         <span className="cast-title display">The Bench</span>
         <span className="cast-count mono">

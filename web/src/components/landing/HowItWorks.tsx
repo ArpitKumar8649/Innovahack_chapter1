@@ -21,7 +21,7 @@ export function HowItWorks() {
       <ol className="flow-list">
         {STEPS.map((s, i) => (
           <Reveal key={s.n} delay={(i % 4) * 70}>
-            <li className="flow-item">
+            <li className="flow-item glow-card">
               <span className="flow-no mono">{s.n}</span>
               <div>
                 <div className="flow-title">{s.t}</div>

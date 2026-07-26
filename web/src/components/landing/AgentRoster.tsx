@@ -24,7 +24,7 @@ export function AgentRoster() {
           const a = AGENTS[id];
           return (
             <Reveal key={id} delay={(i % 5) * 70}>
-              <div className="agent-card" style={{ ["--agent-color" as string]: a.color }}>
+              <div className="agent-card glow-card" style={{ ["--agent-color" as string]: a.color }}>
                 <Avatar agent={a} size={44} />
                 <div>
                   <div className="agent-card-name">{a.name} <span className="agent-card-role">{a.role}</span></div>

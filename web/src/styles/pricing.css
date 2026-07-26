@@ -72,6 +72,14 @@
   .pricing-grid { flex-direction: row; justify-content: center; align-items: stretch; }
 }
 
+/* ---- mobile (≤640px) ---- */
+@media (max-width: 640px) {
+  .pricing-main { padding: 48px 16px; }
+  .pricing-card { max-width: 100%; }
+  .pricing-title { font-size: clamp(30px, 8vw, 40px); }
+  .pricing-subtitle { font-size: 14.5px; }
+}
+
 /* card */
 .pricing-card {
   position: relative;

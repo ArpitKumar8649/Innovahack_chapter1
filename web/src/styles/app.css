@@ -33,6 +33,67 @@
 }
 .nav-auth:hover { transform: translateY(-1px); box-shadow: 0 6px 20px var(--rose-glow); text-decoration: none; }
 
+/* hamburger button — hidden on desktop */
+.nav-burger {
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  gap: 5px;
+  width: 40px;
+  height: 40px;
+  padding: 8px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  cursor: pointer;
+}
+.nav-burger span {
+  display: block;
+  height: 2px;
+  width: 100%;
+  background: var(--ink);
+  border-radius: 2px;
+  transition: transform var(--dur) var(--ease), opacity var(--dur);
+}
+.nav-burger.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+.nav-burger.open span:nth-child(2) { opacity: 0; }
+.nav-burger.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+/* ---- mobile / tablet topbar ---- */
+@media (max-width: 860px) {
+  .topbar { padding: 12px 16px; }
+  .brand-tag { display: none; }
+  .nav-burger { display: flex; }
+  .topnav {
+    position: fixed;
+    top: 61px;
+    left: 0;
+    right: 0;
+    z-index: 49;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 4px;
+    padding: 12px 16px 18px;
+    background: color-mix(in srgb, var(--bg) 96%, transparent);
+    backdrop-filter: blur(14px);
+    border-bottom: 1px solid var(--line-soft);
+    box-shadow: 0 16px 32px rgba(4, 8, 20, 0.5);
+    transform: translateY(-12px);
+    opacity: 0;
+    pointer-events: none;
+    transition: transform var(--dur) var(--ease), opacity var(--dur);
+  }
+  .topnav.open {
+    transform: translateY(0);
+    opacity: 1;
+    pointer-events: auto;
+  }
+  .nav-link { padding: 12px 14px; font-size: 15px; border-radius: var(--r-md); }
+  .nav-auth { margin-left: 0; justify-content: center; padding: 12px 16px; }
+  .nav-user { flex-direction: column; align-items: stretch; gap: 8px; margin-left: 0; }
+  .nav-user-name { text-align: center; max-width: none; }
+}
+
 /* ================================ shared ================================ */
 .section-title { font-size: clamp(28px, 4vw, 44px); line-height: 1.12; margin: 10px 0 14px; }
 .section-sub { color: var(--ink-2); max-width: 640px; font-size: 15.5px; }
@@ -107,6 +168,64 @@
   border-color: rgba(244, 63, 94, 0.28);
   box-shadow: var(--shadow-2), 0 0 44px rgba(244, 63, 94, 0.08);
 }
+
+/* glowing flowing border — a light that travels around any card's edge.
+   Add the `glow-card` class to any element. Pure CSS (conic-gradient sweep
+   masked to the border ring), so it works on every card with no extra DOM. */
+.glow-card {
+  position: relative;
+  isolation: isolate;
+}
+.glow-card::after {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  padding: 1.5px;                 /* the border-ring thickness */
+  background: conic-gradient(
+    from var(--glow-angle, 0deg),
+    transparent 0deg,
+    rgba(251, 113, 133, 0.9) 40deg,
+    rgba(244, 63, 94, 0.95) 70deg,
+    transparent 120deg
+  );
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  mask-composite: exclude;
+  animation: glowSpin 5s linear infinite;
+  pointer-events: none;
+  z-index: 2;
+  opacity: 0.75;
+}
+@property --glow-angle {
+  syntax: "<angle>";
+  initial-value: 0deg;
+  inherits: false;
+}
+@keyframes glowSpin {
+  to { --glow-angle: 360deg; }
+}
+/* a soft outer halo that breathes with the sweep */
+.glow-card::before {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  box-shadow: 0 0 22px rgba(244, 63, 94, 0.16);
+  opacity: 0.6;
+  animation: glowBreathe 5s ease-in-out infinite;
+  pointer-events: none;
+  z-index: 1;
+}
+@keyframes glowBreathe {
+  0%, 100% { opacity: 0.35; }
+  50% { opacity: 0.7; }
+}
+/* stagger the sweep so cards don't all pulse in unison */
+.glow-card:nth-child(2n)::after, .glow-card:nth-child(2n)::before { animation-delay: -1.7s; }
+.glow-card:nth-child(3n)::after, .glow-card:nth-child(3n)::before { animation-delay: -3.1s; }
+
 .dot-card > :not(.dc-dot):not(.dc-ray):not(.dc-line) { position: relative; z-index: 1; }
 
 /* dot patrolling the card's perimeter (motion path along the border box) */
@@ -175,46 +294,257 @@
 .agent-card-role { font-family: var(--font-mono); font-size: 10.5px; color: var(--ink-3); text-transform: uppercase; letter-spacing: 0.08em; margin-left: 6px; }
 .agent-card-lens { font-size: 12.5px; color: var(--ink-2); margin-top: 5px; }
 
-/* receipts */
-.receipts { padding: 56px 24px 20px; }
-.receipt-stack { display: flex; flex-direction: column; gap: 0; margin-top: 30px; max-width: 760px; }
-.receipt {
-  position: relative; display: flex; gap: 20px; align-items: flex-start;
-  background: var(--panel); border: 1px solid var(--line);
-  padding: 20px 22px; margin-bottom: -1px;
-  transition: transform var(--dur) var(--ease), z-index 0s;
-}
-.receipt:first-child { border-radius: var(--r-lg) var(--r-lg) 0 0; }
-.receipt:last-child { border-radius: 0 0 var(--r-lg) var(--r-lg); margin-bottom: 0; }
-.receipt:hover { transform: translateX(6px); z-index: 2; border-color: var(--rose); }
-.receipt-no { font-size: 22px; font-weight: 700; color: var(--rose); opacity: 0.85; min-width: 40px; }
-.receipt-title { font-family: var(--font-display); font-size: 17px; font-weight: 700; margin-bottom: 5px; }
-.receipt-body p { font-size: 13.5px; color: var(--ink-2); }
-.receipt-tag {
-  margin-left: auto; align-self: center;
-  font-size: 10px; color: var(--rose); border: 1px solid rgba(244,63,94,0.4);
-  background: var(--rose-soft); border-radius: 99px; padding: 4px 10px; white-space: nowrap;
-}
-.receipt-perf {
-  position: absolute; left: 0; right: 0; bottom: -5px; height: 5px;
-  background: radial-gradient(circle at 6px 0, transparent 4px, var(--panel) 4.5px);
-  background-size: 12px 5px; pointer-events: none;
+/* receipts — pinned notes on a board, connected by an animated dashed path */
+.receipts { padding: 56px 0 20px; }
+.receipts .eyebrow, .receipts .section-title, .receipts .section-sub { padding: 0 24px; }
+
+.receipts-board-wrap { margin-top: 34px; }
+.receipts-board {
+  position: relative;
+  max-width: 1000px;
+  margin: 0 auto;
+  /* mobile: stacked; desktop: fixed-height board with absolute notes */
+  display: flex;
+  flex-direction: column;
+  gap: 26px;
+  padding: 10px 0 20px;
 }
 
-/* numbers */
-.numbers { padding: 56px 24px 20px; }
-.numbers-grid {
-  display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 14px; margin-top: 26px;
+/* the animated dashed connector (desktop only) */
+.receipts-path {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  display: none;
+  z-index: 0;
 }
-.stat-tile {
-  background: var(--panel); border: 1px solid var(--line); border-radius: var(--r-md);
-  padding: 20px; transition: transform var(--dur) var(--ease), border-color var(--dur);
+.receipts-path path {
+  stroke: var(--line);
+  stroke-width: 2;
+  stroke-dasharray: 8 6;
+  animation: dashFlow 3s linear infinite;
 }
-.stat-tile:hover { transform: translateY(-3px); border-color: var(--rose); }
-.stat-value { font-size: 38px; color: var(--rose); line-height: 1; }
-.stat-label { font-size: 13.5px; font-weight: 600; margin-top: 8px; }
-.stat-note { font-size: 10.5px; color: var(--ink-3); margin-top: 3px; }
+@keyframes dashFlow { to { stroke-dashoffset: -140; } }
+
+/* a single pinned note */
+.receipt-note { position: relative; z-index: 1; }
+.note-outer {
+  position: relative;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 25px;
+  padding: 8px;
+  box-shadow: 0 10px 20px rgba(4, 8, 20, 0.45);
+  transition: transform var(--dur) var(--ease), box-shadow var(--dur);
+  max-width: 320px;
+  margin: 0 auto;
+}
+.note-outer:hover {
+  transform: scale(1.05) rotate(0deg) !important;
+  z-index: 30;
+  box-shadow: 0 16px 34px rgba(4, 8, 20, 0.6);
+}
+/* the pin */
+.note-pin {
+  display: block;
+  width: 32px;
+  height: 32px;
+  margin: 0 auto 18px;
+  position: relative;
+  z-index: 2;
+  filter: drop-shadow(0 2px 3px rgba(0,0,0,0.4));
+}
+/* inner tinted panel */
+.note-inner {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid;
+  border-radius: 15px;
+  padding: 15px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.note-number {
+  font-size: 40px;
+  font-weight: 700;
+  line-height: 1;
+  font-family: var(--font-display);
+}
+.note-title {
+  font-size: 22px;
+  font-weight: 600;
+  line-height: 1.1;
+  color: var(--ink);
+}
+.note-desc {
+  font-size: 13.5px;
+  line-height: 1.45;
+  color: var(--ink-2);
+}
+.note-tag {
+  align-self: flex-start;
+  font-size: 10px;
+  border: 1px solid;
+  border-radius: 99px;
+  padding: 4px 11px;
+  white-space: nowrap;
+  margin-top: 2px;
+}
+
+/* per-note rose-family themes (varied tints, all in the rose family) */
+.theme-1 .note-inner { background: rgba(244, 63, 94, 0.10); border-color: rgba(244, 63, 94, 0.28); }
+.theme-1 .note-number, .theme-1 .note-pin, .theme-1 .note-tag { color: var(--rose); }
+.theme-1 .note-tag { border-color: rgba(244, 63, 94, 0.4); background: rgba(244, 63, 94, 0.08); }
+
+.theme-2 .note-inner { background: rgba(251, 113, 133, 0.10); border-color: rgba(251, 113, 133, 0.28); }
+.theme-2 .note-number, .theme-2 .note-pin, .theme-2 .note-tag { color: var(--rose-light); }
+.theme-2 .note-tag { border-color: rgba(251, 113, 133, 0.4); background: rgba(251, 113, 133, 0.08); }
+
+.theme-3 .note-inner { background: rgba(190, 18, 60, 0.12); border-color: rgba(190, 18, 60, 0.3); }
+.theme-3 .note-number, .theme-3 .note-pin, .theme-3 .note-tag { color: #f43f5e; }
+.theme-3 .note-tag { border-color: rgba(190, 18, 60, 0.4); background: rgba(190, 18, 60, 0.1); }
+
+.theme-4 .note-inner { background: rgba(244, 63, 94, 0.08); border-color: rgba(244, 63, 94, 0.24); }
+.theme-4 .note-number, .theme-4 .note-pin, .theme-4 .note-tag { color: var(--rose-light); }
+.theme-4 .note-tag { border-color: rgba(244, 63, 94, 0.35); background: rgba(244, 63, 94, 0.07); }
+
+/* alternating tilt */
+.pos-1 .note-outer { transform: rotate(3deg); }
+.pos-2 .note-outer { transform: rotate(-3deg); }
+.pos-3 .note-outer { transform: rotate(3deg); }
+.pos-4 .note-outer { transform: rotate(-3deg); }
+
+/* desktop: absolute pin-board layout + visible connector */
+@media (min-width: 768px) {
+  .receipts-board { display: block; height: 900px; }
+  .receipts-path { display: block; }
+  .receipt-note { position: absolute; }
+  .receipt-note .note-outer { margin: 0; }
+  .pos-1 { top: 0;      left: 15%; }
+  .pos-2 { top: 120px;  right: 15%; }
+  .pos-3 { top: 450px;  left: 15%; }
+  .pos-4 { top: 570px;  right: 10%; }
+}
+
+/* numbers — scanner card stream */
+.numbers { padding: 56px 0 20px; }
+.numbers .section-title, .numbers .section-sub, .numbers .eyebrow { padding: 0 24px; }
+
+/* the scrolling viewport with a scanner beam down the middle */
+.scan-viewport {
+  position: relative;
+  overflow: hidden;
+  margin-top: 30px;
+  padding: 26px 0;
+}
+.scan-track {
+  display: flex;
+  gap: 22px;
+  width: max-content;
+  will-change: transform;
+  padding: 0 24px;
+}
+
+/* rose scanner beam, centered, glowing */
+.scan-beam {
+  position: absolute;
+  top: 8px; bottom: 8px;
+  left: 50%;
+  width: 2px;
+  transform: translateX(-50%);
+  background: linear-gradient(180deg, transparent, var(--rose-light) 20%, var(--rose) 50%, var(--rose-light) 80%, transparent);
+  box-shadow: 0 0 8px var(--rose), 0 0 18px var(--rose-glow), 0 0 32px var(--rose-glow);
+  animation: scanPulse 1.6s ease-in-out infinite alternate;
+  z-index: 3;
+  pointer-events: none;
+}
+@keyframes scanPulse {
+  from { opacity: 0.7; transform: translateX(-50%) scaleY(0.98); }
+  to   { opacity: 1;   transform: translateX(-50%) scaleY(1.02); }
+}
+
+/* edge fade so cards dissolve in/out */
+.scan-fade {
+  position: absolute;
+  top: 0; bottom: 0;
+  width: 120px;
+  z-index: 2;
+  pointer-events: none;
+}
+.scan-fade-l { left: 0; background: linear-gradient(90deg, var(--bg), transparent); }
+.scan-fade-r { right: 0; background: linear-gradient(-90deg, var(--bg), transparent); }
+
+/* individual stat card — two stacked layers split by the scanner beam */
+.scan-card {
+  position: relative;
+  flex-shrink: 0;
+  width: 230px;
+  height: 150px;
+  border-radius: var(--r-md);
+  overflow: hidden;
+  transition: box-shadow var(--dur);
+}
+.scan-card:hover { box-shadow: 0 8px 26px rgba(244,63,94,0.14); }
+
+/* both layers fill the card; clip-path splits them at the beam */
+.scan-layer {
+  position: absolute;
+  inset: 0;
+  padding: 22px 20px;
+  box-sizing: border-box;
+}
+/* normal layer: visible to the RIGHT of the beam (clips away from the right) */
+.scan-normal {
+  z-index: 2;
+  background: linear-gradient(160deg, var(--panel), var(--panel-2));
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  clip-path: inset(0 0 0 var(--clip-right, 0%));
+}
+.scan-normal::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--rose), transparent);
+  opacity: 0.5;
+}
+/* ascii layer: visible to the LEFT of the beam (clips away from the left) */
+.scan-ascii {
+  z-index: 1;
+  background: var(--bg-2);
+  border: 1px solid var(--line-soft);
+  border-radius: var(--r-md);
+  clip-path: inset(0 calc(100% - var(--clip-left, 0%)) 0 0);
+  display: flex;
+  align-items: center;
+}
+.scan-code {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  line-height: 12px;
+  color: rgba(251, 113, 133, 0.55);
+  white-space: pre;
+  overflow: hidden;
+  width: 100%;
+  mask-image: linear-gradient(to right, rgba(0,0,0,1) 0%, rgba(0,0,0,0.7) 60%, rgba(0,0,0,0.35) 100%);
+  -webkit-mask-image: linear-gradient(to right, rgba(0,0,0,1) 0%, rgba(0,0,0,0.7) 60%, rgba(0,0,0,0.35) 100%);
+  animation: codeGlitch 0.12s infinite linear alternate-reverse;
+}
+@keyframes codeGlitch {
+  0%, 16%, 50%, 100% { opacity: 1; }
+  15%, 99% { opacity: 0.85; }
+  49% { opacity: 0.75; }
+}
+
+.scan-value { font-size: 38px; color: var(--rose); line-height: 1; font-variant-numeric: tabular-nums; }
+.scan-label { font-size: 13.5px; font-weight: 600; margin-top: 9px; color: var(--ink); }
+.scan-note { font-size: 10.5px; color: var(--ink-3); margin-top: 3px; }
+
 .numbers-model { margin-top: 18px; font-size: 12px; color: var(--ink-3); }
 .numbers-model b { color: var(--ink-2); }
 
@@ -846,6 +1176,57 @@
   .court-grid { grid-template-columns: 1fr; }
   .chat-space, .terminal { max-height: 440px; }
   .report-head { flex-direction: column; align-items: flex-start; }
+}
+
+/* ---- tablet (≤1024px) ---- */
+@media (max-width: 1024px) {
+  .wrap { padding: 0 20px; }
+  .opening { gap: 32px; padding: 48px 20px 40px; }
+  .roster-grid { grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); }
+  .receipts-board { height: auto; }
+  .receipts-path { display: none; }
+  .receipt-note { position: static !important; }
+  .receipts-board { display: flex; flex-direction: column; gap: 22px; }
+  .note-outer { margin: 0 auto; }
+}
+
+/* ---- mobile (≤640px) ---- */
+@media (max-width: 640px) {
+  .wrap { padding: 0 16px; }
+  .opening { padding: 36px 16px 32px; gap: 28px; }
+  .opening-title { font-size: clamp(32px, 9vw, 44px); }
+  .opening-sub { font-size: 15px; }
+  .opening-cta { flex-direction: column; }
+  .opening-cta .btn { width: 100%; justify-content: center; }
+  .section-title { font-size: clamp(26px, 7vw, 34px); }
+  .section-sub { font-size: 14.5px; }
+
+  /* roster: single column */
+  .roster-grid { grid-template-columns: 1fr; }
+
+  /* scanner cards: narrower so ~1.3 cards show */
+  .scan-card { width: 200px; height: 140px; }
+  .scan-value { font-size: 32px; }
+  .scan-viewport { padding: 20px 0; }
+
+  /* receipts: full-width stacked notes */
+  .note-outer { max-width: 100%; }
+  .pos-1 .note-outer, .pos-2 .note-outer,
+  .pos-3 .note-outer, .pos-4 .note-outer { transform: rotate(0deg); }
+
+  /* flow steps: single column */
+  .flow-list { grid-template-columns: 1fr; }
+
+  /* court intake: stack form */
+  .intake-form { flex-direction: column; }
+  .intake-form .btn { width: 100%; justify-content: center; }
+  .intake-options { flex-wrap: wrap; gap: 12px; }
+
+  /* report: tighten */
+  .report-head { gap: 16px; }
+  .sources { grid-template-columns: 1fr; }
+  .trust-radar { width: 100%; }
+  .radar-svg { width: 100%; height: auto; }
 }
 
 /* ================================ rose button ================================ */
