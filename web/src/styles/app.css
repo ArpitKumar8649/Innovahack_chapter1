@@ -100,6 +100,63 @@
   font-size: 10.5px; color: var(--ink-3);
 }
 
+/* moving-dot-card chrome — orbiting dot, sweeping ray, corner brackets */
+.stage-card.dot-card {
+  position: relative;
+  overflow: hidden;
+  border-color: rgba(244, 63, 94, 0.28);
+  box-shadow: var(--shadow-2), 0 0 44px rgba(244, 63, 94, 0.08);
+}
+.dot-card > :not(.dc-dot):not(.dc-ray):not(.dc-line) { position: relative; z-index: 1; }
+
+/* dot patrolling the card's perimeter (motion path along the border box) */
+.dc-dot {
+  position: absolute;
+  top: 0; left: 0;
+  width: 9px; height: 9px;
+  border-radius: 50%;
+  background: var(--rose-light);
+  box-shadow: 0 0 10px 2px var(--rose-glow), 0 0 3px 1px var(--rose-light);
+  offset-path: inset(-1px round var(--r-lg));
+  offset-rotate: 0deg;
+  animation: dcOrbit 11s linear infinite;
+  z-index: 3;
+  pointer-events: none;
+}
+@keyframes dcOrbit {
+  from { offset-distance: 0%; }
+  to   { offset-distance: 100%; }
+}
+
+/* rotating radar-style sweep behind the content */
+.dc-ray {
+  position: absolute;
+  top: 50%; left: 50%;
+  width: 220%; height: 220%;
+  transform: translate(-50%, -50%);
+  background: conic-gradient(from 0deg, transparent 0deg, rgba(251, 113, 133, 0.10) 16deg, transparent 42deg);
+  animation: dcSweep 8s linear infinite;
+  z-index: 0;
+  pointer-events: none;
+}
+@keyframes dcSweep {
+  to { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
+/* corner brackets */
+.dc-line {
+  position: absolute;
+  background: var(--rose);
+  z-index: 2;
+  pointer-events: none;
+  animation: dcCorner 3s ease-in-out infinite;
+}
+@keyframes dcCorner { 0%, 100% { opacity: 0.35; } 50% { opacity: 0.85; } }
+.dc-topl    { top: 10px;    left: 10px;  width: 22px; height: 2px; }
+.dc-leftl   { top: 10px;    left: 10px;  width: 2px;  height: 22px; }
+.dc-bottoml { bottom: 10px; right: 10px; width: 22px; height: 2px; }
+.dc-rightl  { bottom: 10px; right: 10px; width: 2px;  height: 22px; }
+
 /* roster */
 .roster { padding: 40px 24px 20px; }
 .roster-grid {

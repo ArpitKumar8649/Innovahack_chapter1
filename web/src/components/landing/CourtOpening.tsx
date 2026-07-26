@@ -33,7 +33,15 @@ export function CourtOpening() {
       </div>
 
       <Reveal delay={150} className="opening-stage">
-        <div className="stage-card">
+        <div className="stage-card dot-card">
+          {/* moving-dot-card chrome */}
+          <span className="dc-dot" aria-hidden />
+          <span className="dc-ray" aria-hidden />
+          <span className="dc-line dc-topl" aria-hidden />
+          <span className="dc-line dc-leftl" aria-hidden />
+          <span className="dc-line dc-bottoml" aria-hidden />
+          <span className="dc-line dc-rightl" aria-hidden />
+
           <div className="stage-card-head">
             <span className="live-dot" /> <span className="mono">in session — claim C4</span>
           </div>
