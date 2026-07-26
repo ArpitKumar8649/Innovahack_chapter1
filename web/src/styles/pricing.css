@@ -4,7 +4,7 @@
   min-height: 100vh;
   width: 100%;
   overflow-x: hidden;
-  background: var(--bg);
+  background: #000;
 }
 
 /* WebGL shader canvas sits behind everything. Its background color matches

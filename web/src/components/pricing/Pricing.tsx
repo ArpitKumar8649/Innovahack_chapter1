@@ -38,9 +38,8 @@ void main(){
   gl_FragColor=vec4(color,1.);
 }`;
 
-/* The page is dark-themed; background is the site's rose-noir (#14060b)
-   so the orbits read exactly as the original but over a rosy base. */
-const BG_COLOR = new Float32Array([0.078, 0.024, 0.043]);
+/* Smooth black background — orbits render exactly as the original design. */
+const BG_COLOR = new Float32Array([0, 0, 0]);
 
 function ShaderCanvas() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
