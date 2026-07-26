@@ -1,9 +1,13 @@
 import { Link, Route, Routes, useLocation } from "react-router-dom";
 import { Landing } from "./components/landing/Landing";
 import { CourtView } from "./components/court/CourtView";
+import { SignIn } from "./components/auth/SignIn";
+import { SignUp } from "./components/auth/SignUp";
+import { Pricing } from "./components/pricing/Pricing";
 
 function TopBar() {
   const { pathname } = useLocation();
+  const isAuth = pathname === "/signin" || pathname === "/signup";
   return (
     <header className="topbar">
       <Link to="/" className="brand">
@@ -16,6 +20,12 @@ function TopBar() {
         <Link to="/court" className={pathname.startsWith("/court") ? "nav-link active" : "nav-link"}>
           Enter the Court
         </Link>
+        <Link to="/pricing" className={pathname === "/pricing" ? "nav-link active" : "nav-link"}>
+          Pricing
+        </Link>
+        {!isAuth && (
+          <Link to="/signin" className="nav-auth btn-rose">Sign in</Link>
+        )}
       </nav>
     </header>
   );
@@ -28,6 +38,9 @@ export default function App() {
       <Routes>
         <Route path="/" element={<Landing />} />
         <Route path="/court" element={<CourtView />} />
+        <Route path="/signin" element={<SignIn />} />
+        <Route path="/signup" element={<SignUp />} />
+        <Route path="/pricing" element={<Pricing />} />
       </Routes>
     </>
   );
