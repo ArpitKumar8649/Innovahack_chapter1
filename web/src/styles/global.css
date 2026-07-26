@@ -59,14 +59,14 @@ button { font-family: inherit; cursor: pointer; }
   padding: 10px 18px; border-radius: var(--r-md);
   transition: transform var(--dur) var(--ease), background var(--dur), border-color var(--dur), box-shadow var(--dur);
 }
-.btn:hover { transform: translateY(-1px); border-color: var(--gold); box-shadow: 0 6px 20px rgba(217,164,65,0.16); text-decoration: none; }
+.btn:hover { transform: translateY(-1px); border-color: var(--gold); box-shadow: 0 6px 20px rgba(244,63,94,0.16); text-decoration: none; }
 .btn:active { transform: translateY(0); }
 .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
 .btn-gold {
-  background: linear-gradient(135deg, var(--gold), #b8862e);
+  background: linear-gradient(135deg, var(--gold), #be123c);
   border-color: transparent; color: #171106;
 }
-.btn-gold:hover { box-shadow: 0 8px 26px rgba(217,164,65,0.35); }
+.btn-gold:hover { box-shadow: 0 8px 26px rgba(244,63,94,0.35); }
 
 .chip {
   display: inline-flex; align-items: center;
@@ -102,8 +102,8 @@ button { font-family: inherit; cursor: pointer; }
   font-family: var(--font-mono); font-size: 10px; font-weight: 700;
   border-radius: 6px; border: 1px solid var(--line); color: var(--ink-2);
 }
-.tier-1 { color: var(--gold); border-color: rgba(217,164,65,0.5); background: var(--gold-soft); }
-.tier-2 { color: var(--accent); border-color: rgba(90,162,255,0.4); background: var(--accent-soft); }
+.tier-1 { color: var(--gold); border-color: rgba(244,63,94,0.5); background: var(--gold-soft); }
+.tier-2 { color: var(--accent); border-color: rgba(251,113,133,0.4); background: var(--accent-soft); }
 .tier-3 { color: var(--green); border-color: rgba(62,207,142,0.35); background: var(--green-soft); }
 .tier-5 { color: var(--ink-3); }
 

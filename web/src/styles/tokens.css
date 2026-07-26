@@ -15,9 +15,9 @@
   --ink-3: #7e8aa6;
   --ink-4: #55617e;
 
-  /* the bench */
-  --gold: #d9a441;
-  --gold-soft: rgba(217, 164, 65, 0.14);
+  /* the bench — rose (matches the footer palette exactly) */
+  --gold: #f43f5e;                 /* rose-500 */
+  --gold-soft: rgba(244, 63, 94, 0.14);
 
   /* verdicts */
   --green: #3ecf8e;
@@ -27,11 +27,11 @@
   --amber: #f5b942;
   --amber-soft: rgba(245, 185, 66, 0.13);
 
-  /* accents */
-  --accent: #5aa2ff;
-  --accent-soft: rgba(90, 162, 255, 0.13);
-  --accent-2: #9a7bff;
-  --accent-2-soft: rgba(154, 123, 255, 0.13);
+  /* accents — rose family (was blue / violet) */
+  --accent: #fb7185;               /* rose-400 */
+  --accent-soft: rgba(251, 113, 133, 0.13);
+  --accent-2: #be123c;             /* rose-700 */
+  --accent-2-soft: rgba(190, 18, 60, 0.13);
 
   /* rose — landing page theme */
   --rose: #f43f5e;

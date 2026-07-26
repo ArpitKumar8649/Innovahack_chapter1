@@ -21,7 +21,7 @@
   transition: color var(--dur), border-color var(--dur), background var(--dur);
 }
 .nav-link:hover { color: var(--ink); text-decoration: none; border-color: var(--line); }
-.nav-link.active { color: var(--gold); border-color: rgba(217,164,65,0.4); background: var(--gold-soft); }
+.nav-link.active { color: var(--gold); border-color: rgba(244,63,94,0.4); background: var(--gold-soft); }
 
 /* ================================ shared ================================ */
 .section-title { font-size: clamp(28px, 4vw, 44px); line-height: 1.12; margin: 10px 0 14px; }
@@ -204,7 +204,7 @@
 }
 .stage-icon { font-size: 12px; }
 .stage.done { color: var(--green); border-color: rgba(62,207,142,0.4); background: var(--green-soft); }
-.stage.active { color: var(--gold); border-color: rgba(217,164,65,0.5); background: var(--gold-soft); animation: pulse 1.4s infinite; }
+.stage.active { color: var(--gold); border-color: rgba(244,63,94,0.5); background: var(--gold-soft); animation: pulse 1.4s infinite; }
 .stage-link { width: 18px; height: 1px; background: var(--line); flex-shrink: 0; }
 .stage-link.done { background: var(--green); }
 
@@ -240,7 +240,7 @@
 .agent-msg-head { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 5px; }
 .agent-name { font-weight: 700; font-size: 13.5px; }
 .agent-role { font-family: var(--font-mono); font-size: 10px; color: var(--ink-4); text-transform: uppercase; letter-spacing: 0.08em; }
-.round-tag { font-size: 9.5px; color: var(--accent-2); border: 1px solid rgba(154,123,255,0.4); background: var(--accent-2-soft); border-radius: 5px; padding: 1px 6px; }
+.round-tag { font-size: 9.5px; color: var(--accent-2); border: 1px solid rgba(190,18,60,0.4); background: var(--accent-2-soft); border-radius: 5px; padding: 1px 6px; }
 .action-tag { font-size: 10px; font-weight: 700; padding: 1px 8px; border-radius: 99px; }
 .act-concede { color: var(--green); background: var(--green-soft); }
 .act-rebut { color: var(--red); background: var(--red-soft); }
@@ -256,7 +256,7 @@
 .agent-quote {
   border-left: 2px solid var(--accent); padding: 6px 10px; margin-top: 8px;
   color: var(--ink-2); font-style: italic; font-size: 12.5px;
-  background: rgba(90,162,255,0.05); border-radius: 0 var(--r-sm) var(--r-sm) 0;
+  background: rgba(251,113,133,0.05); border-radius: 0 var(--r-sm) var(--r-sm) 0;
 }
 .agent-quote.void { border-left-color: var(--red); background: var(--red-soft); }
 .quote-chunk { font-size: 10px; color: var(--ink-4); margin-left: 6px; font-style: normal; }
@@ -342,9 +342,9 @@
 .claim-card.status-edge-REFUTED { border-left: 3px solid var(--red); }
 .claim-card.status-edge-ESTABLISHED { border-left: 3px solid var(--green); }
 .claim-card.status-edge-CONTESTED { border-left: 3px solid var(--amber); }
-.claim-card.from-memory { border-color: rgba(154,123,255,0.4); }
+.claim-card.from-memory { border-color: rgba(190,18,60,0.4); }
 .claim-head { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 8px; }
-.mem-tag { font-size: 10px; color: var(--accent-2); border: 1px solid rgba(154,123,255,0.4); background: var(--accent-2-soft); border-radius: 99px; padding: 2px 9px; }
+.mem-tag { font-size: 10px; color: var(--accent-2); border: 1px solid rgba(190,18,60,0.4); background: var(--accent-2-soft); border-radius: 99px; padding: 2px 9px; }
 .claim-type { font-size: 10px; color: var(--ink-4); }
 .conf-bar { position: relative; flex: 1; min-width: 90px; height: 8px; background: var(--bg-2); border-radius: 99px; overflow: visible; }
 .conf-fill { height: 8px; border-radius: 99px; }
@@ -364,7 +364,7 @@
 /* Phase 6 — semantic layer */
 .semantic-prior {
   margin-top: 10px; font-size: 12px; color: var(--accent);
-  background: var(--accent-soft); border: 1px solid rgba(90,162,255,0.3);
+  background: var(--accent-soft); border: 1px solid rgba(251,113,133,0.3);
   border-radius: var(--r-sm); padding: 7px 11px;
 }
 .counter-evidence {
@@ -401,10 +401,10 @@
 .claim-evidence { display: flex; gap: 6px; flex-wrap: wrap; }
 .ev-chip {
   font-size: 10px; color: var(--accent); background: var(--accent-soft);
-  border: 1px solid rgba(90,162,255,0.35); border-radius: var(--r-sm); padding: 3px 8px;
+  border: 1px solid rgba(251,113,133,0.35); border-radius: var(--r-sm); padding: 3px 8px;
   transition: background var(--dur), transform var(--dur) var(--ease);
 }
-.ev-chip:hover { background: rgba(90,162,255,0.25); transform: translateY(-1px); }
+.ev-chip:hover { background: rgba(251,113,133,0.25); transform: translateY(-1px); }
 .claim-note { margin-top: 10px; font-size: 12.5px; color: var(--ink-3); border-top: 1px dashed var(--line-soft); padding-top: 9px; }
 
 .sources { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 10px; }
@@ -458,7 +458,7 @@
 .insp-proof.ok { color: var(--green); }
 .insp-proof.bad { color: var(--red); }
 .insp-text { font-size: 13px; color: var(--ink-2); max-height: 180px; overflow-y: auto; line-height: 1.6; }
-.insp-text mark { background: rgba(217,164,65,0.3); color: #fff; border-radius: 3px; padding: 1px 2px; }
+.insp-text mark { background: rgba(244,63,94,0.3); color: #fff; border-radius: 3px; padding: 1px 2px; }
 .insp-hash { margin-top: 8px; font-size: 10.5px; color: var(--ink-4); }
 .insp-verdicts { display: flex; flex-direction: column; gap: 8px; }
 .insp-v { background: var(--panel); border: 1px solid var(--line); border-radius: var(--r-md); padding: 10px 14px; font-size: 13px; }
@@ -477,7 +477,7 @@
 .radar-svg { width: 200px; height: 200px; }
 .radar-ring { fill: none; stroke: var(--line); stroke-width: 1; }
 .radar-axis { stroke: var(--line-soft); stroke-width: 1; }
-.radar-data { fill: rgba(217, 164, 65, 0.16); stroke: var(--gold); stroke-width: 2; }
+.radar-data { fill: rgba(244, 63, 94, 0.16); stroke: var(--gold); stroke-width: 2; }
 .radar-dot { fill: var(--gold); }
 .radar-label { fill: var(--ink-3); font-size: 9px; font-family: var(--font-mono); text-transform: uppercase; letter-spacing: 0.05em; }
 .radar-legend { display: flex; flex-direction: column; gap: 4px; width: 200px; }
@@ -516,7 +516,7 @@
   display: flex; flex-direction: column; gap: 5px; overflow: hidden;
   transition: border-color var(--dur), box-shadow var(--dur);
 }
-.tree-node.kind-root { border-color: var(--gold); box-shadow: 0 0 0 1px rgba(217,164,65,0.25); }
+.tree-node.kind-root { border-color: var(--gold); box-shadow: 0 0 0 1px rgba(244,63,94,0.25); }
 .tree-node.kind-hypothesis { border-left: 3px solid var(--accent-2); }
 .tree-node.kind-supports { border-left: 3px solid var(--green); }
 .tree-node.kind-attacks { border-left: 3px solid var(--red); }
